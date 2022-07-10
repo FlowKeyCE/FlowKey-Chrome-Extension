@@ -20,3 +20,4 @@
     background: "./src/background.jsx",
   },
 ```
+
