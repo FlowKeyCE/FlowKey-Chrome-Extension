@@ -45,6 +45,9 @@ module.exports = {
       },
     ],
   },
+  resolve: {
+    extensions: [".js", ".jsx", ".tsx"],
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/popup.html",
