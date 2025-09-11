@@ -15,6 +15,20 @@ function BookmarksPage({ onBack }) {
     console.log("Add website to bookmarks...");
   };
 
+  const handleLinkClick = () => {
+    window.open('https://flowkey-two.vercel.app/', '_blank');
+  };
+
+  const handleFileClick = () => {
+    // Replace with actual FlowKey documentation URL
+    window.open('https://github.com/pasindupiumal03/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+  };
+
+  const handleTwitterClick = () => {
+    // Replace with actual FlowKey Twitter URL
+    window.open('https://twitter.com/flowkey', '_blank');
+  };
+
   return (
     <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-4 relative">
       {/* Solid color overlay */}
@@ -36,7 +50,7 @@ function BookmarksPage({ onBack }) {
         <div className="space-y-3 mb-6">
           <button 
             onClick={handleOpenAllBookmarks}
-            className="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg flex items-center justify-between hover:bg-gray-100 transition-colors"
+            className="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors"
           >
             <span>Open All Bookmarks</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +60,7 @@ function BookmarksPage({ onBack }) {
 
           <button 
             onClick={handleAddToBookmarks}
-            className="w-full text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-between transition-colors"
+            className="w-full text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
             style={{ backgroundColor: '#6E4EFF' }}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
@@ -70,13 +84,16 @@ function BookmarksPage({ onBack }) {
           </div>
 
           {/* Empty State */}
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="mb-6">
-              <svg className="w-24 h-24 text-purple-300 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
+          <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4">
+            <div className="flex justify-center">
+              <img 
+                src="./assets/icons/book-mark.png" 
+                alt="Empty Bookmarks" 
+                className="opacity-50 max-w-full h-auto"
+                style={{ maxHeight: '120px' }}
+              />
             </div>
-            <p className="text-center text-lg opacity-80 mb-8">
+            <p className="text-center text-sm opacity-80 max-w-sm">
               Looks empty...add your first bookmark
             </p>
             
@@ -90,7 +107,7 @@ function BookmarksPage({ onBack }) {
           </div>
         </div>
 
-        {/* Layouts Section */}
+        {/* Layouts Section
         <div className="mt-6">
           <div className="flex items-center mb-4">
             <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,24 +115,30 @@ function BookmarksPage({ onBack }) {
             </svg>
             <h2 className="text-xl font-semibold">Layouts (0)</h2>
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom Navigation */}
         <div className="flex justify-center space-x-8 mt-6 pt-4 border-t border-purple-600/30">
-          <button className="p-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-            </svg>
+          <button className="p-2" onClick={handleLinkClick}>
+            <img 
+              src="./assets/icons/link.png" 
+              alt="Link" 
+              className="w-6 h-6"
+            />
           </button>
-          <button className="p-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+          <button className="p-2" onClick={handleFileClick}>
+            <img 
+              src="./assets/icons/file.png" 
+              alt="File" 
+              className="w-6 h-6"
+            />
           </button>
-          <button className="p-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button className="p-2" onClick={handleTwitterClick}>
+            <img 
+              src="./assets/icons/twitter.png" 
+              alt="Twitter" 
+              className="w-6 h-6"
+            />
           </button>
         </div>
       </div>
