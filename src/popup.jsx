@@ -5,11 +5,32 @@ import {
 } from "./controllers/storageController.js";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-
+import WelcomePage from "./components/WelcomePage.jsx";
+import BookmarksPage from "./components/BookmarksPage.jsx";
 
 function Popup() {
-  return <div className="w-full h-full bg-black text-white">
-  </div>;
+  const [currentPage, setCurrentPage] = useState('welcome'); // 'welcome' or 'bookmarks'
+
+  const handlePhantomConnect = () => {
+    console.log("Connecting to Phantom wallet...");
+    // Simulate successful connection and navigate to bookmarks
+    setCurrentPage('bookmarks');
+  };
+
+  const handleBackToWelcome = () => {
+    setCurrentPage('welcome');
+  };
+
+  return (
+    <>
+      {currentPage === 'welcome' && (
+        <WelcomePage onConnect={handlePhantomConnect} />
+      )}
+      {currentPage === 'bookmarks' && (
+        <BookmarksPage onBack={handleBackToWelcome} />
+      )}
+    </>
+  );
 }
 
 const root = createRoot(document.getElementById("react-target"));
