@@ -1,132 +1,152 @@
-# React Chrome Extension Boilerplate
+# FlowKey Chrome Extension
 
-A modern Chrome extension boilerplate built with React 18, Webpack 5, and modern JavaScript tooling.
+A powerful bookmark and layout management Chrome extension with Phantom wallet integration, built with React 18 and modern web technologies.
 
-## Features
+## 🚀 Features
 
-- ⚛️ **React 18** with modern hooks and features
-- 🛠️ **Webpack 5** for efficient bundling
-- 🎨 **Sass/SCSS** support for styling
-- 📦 **Modern ES6+** JavaScript with Babel transpilation
-- 🔧 **Hot reloading** for development
-- 📱 **Chrome Extension Manifest V3** compatible
+- 🔗 **Smart Bookmark Management** - Organize and access your bookmarks efficiently
+- 👻 **Phantom Wallet Integration** - Seamless crypto wallet connectivity
+- 🎨 **Modern UI/UX** - Beautiful purple gradient design with Poppins typography
+- ⚛️ **React 18** - Built with latest React features and hooks
+- 🛠️ **Webpack 5** - Optimized bundling and hot reloading
+- 📱 **Chrome Extension Manifest V3** - Latest extension standards
+- 🎯 **Layout Organization** - Manage different bookmark layouts
+- 🔧 **Component-Based Architecture** - Clean, maintainable code structure
 
-## Prerequisites
+## 📦 Installation
 
+### Prerequisites
 - Node.js (v14 or higher)
-- Yarn package manager
+- npm or yarn package manager
 - Google Chrome browser
 
-## Installation
-
+### Setup
 1. Clone the repository:
    ```bash
-   git clone <your-repo-url>
-   cd react-chrome-extension
+   git clone https://github.com/pasindupiumal03/FlowKey-Chrome-Extension.git
+   cd FlowKey-Chrome-Extension
    ```
 
 2. Install dependencies:
    ```bash
-   yarn
+   npm install
+   # or
+   yarn install
    ```
 
-## Development
+## 🛠️ Development
 
 ### Development Mode
 Run the development server with hot reloading:
 ```bash
+npm run dev
+# or
 yarn dev
 ```
-
-This will:
-- Watch for file changes
-- Automatically rebuild the extension
-- Enable hot reloading for faster development
 
 ### Production Build
 Build the extension for production:
 ```bash
+npm run build
+# or
 yarn build
 ```
 
-This creates optimized, minified files ready for distribution.
-
-## Loading the Extension in Chrome
+## 🔧 Loading Extension in Chrome
 
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable "Developer mode" in the top right corner
-3. Click "Load unpacked" and select the `dist` folder (after running `yarn build`) or the `public` folder (for development)
-4. The extension should now appear in your extensions list
+3. Click "Load unpacked" and select the `dist` folder (after running build)
+4. The FlowKey extension should now appear in your extensions list
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 ├── public/
 │   ├── manifest.json          # Chrome extension manifest
-│   └── icons/                 # Extension icons
+│   └── assets/
+│       └── icons/             # FlowKey logos in various sizes
 ├── src/
-│   ├── popup.jsx             # Extension popup component
+│   ├── popup.jsx             # Main extension entry point
+│   ├── components/
+│   │   ├── WelcomePage.jsx   # Welcome/login page
+│   │   └── BookmarksPage.jsx # Bookmarks management
 │   ├── content.jsx           # Content script
 │   ├── background.jsx        # Background script
 │   ├── popup.html            # Popup HTML template
-│   └── controllers/          # Utility controllers
+│   ├── controllers/          # Storage and utility controllers
+│   └── assets/               # Images, fonts, and static assets
 ├── webpack.config.js         # Base webpack configuration
 ├── webpack.dev.js           # Development webpack config
 ├── webpack.prod.js          # Production webpack config
 └── package.json
 ```
 
-## Configuration
+## 🎨 Design Features
 
-### Webpack Entry Points
-Configure your JavaScript entry points in **webpack.config.js**:
-```javascript
-entry: {
-  popup: "./src/popup.jsx",
-  content: "./src/content.jsx",
-  background: "./src/background.jsx",
-},
-```
+### Color Palette
+- **Primary Gradient**: Purple (#6E4EFF) to Blue gradient
+- **Background**: Deep purple-blue gradient (`from-purple-900 via-blue-900 to-purple-800`)
+- **Accent**: FlowKey purple (#6E4EFF)
 
-### Chrome Extension Manifest
-Update the `public/manifest.json` file to configure your extension's permissions, icons, and behavior.
+### Typography
+- **Font Family**: Poppins
+- **Welcome Text**: 48px, Extra Bold (800)
+- **UI Elements**: Various weights for hierarchy
 
-## React 18 Features
+### Components
+- **WelcomePage**: Phantom wallet connection interface
+- **BookmarksPage**: Bookmark and layout management
+- **Responsive Design**: Optimized for 400x600 popup dimensions
 
-This boilerplate uses React 18 with the following modern features:
-- **Concurrent Features** for better performance
-- **Automatic Batching** for state updates
-- **Suspense** for data fetching
-- **New Root API** with `createRoot`
+## 🔌 Phantom Wallet Integration
 
-## Dependencies
+The extension includes seamless integration with Phantom wallet:
+- Modern wallet connection UI
+- Secure authentication flow
+- Wallet state management
+- Transaction capabilities (expandable)
 
-### Core Dependencies
-- **React 18.2.0** - Modern React with latest features
-- **React DOM 18.2.0** - React rendering for web
-- **React Custom Checkbox** - Custom checkbox components
-- **React Flags Select** - Country flag selection
-- **React Select Search** - Searchable select components
+## 🚀 Features Roadmap
 
-### Development Dependencies
-- **Webpack 5** - Module bundler
-- **Babel 7** - JavaScript transpiler
-- **Sass** - CSS preprocessor
-- **Various loaders** for handling different file types
+- [ ] Advanced bookmark categorization
+- [ ] Cloud sync capabilities
+- [ ] Multiple wallet support
+- [ ] Import/export functionality
+- [ ] Custom themes
+- [ ] Keyboard shortcuts
+- [ ] Search and filtering
+- [ ] Bookmark analytics
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-ISC License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 👨‍💻 Author
 
-For issues and questions, please open an issue on the repository.
+**Pasindu Piumal**
+- GitHub: [@pasindupiumal03](https://github.com/pasindupiumal03)
+- Repository: [FlowKey-Chrome-Extension](https://github.com/pasindupiumal03/FlowKey-Chrome-Extension)
 
+## 🙏 Acknowledgments
+
+- React team for the amazing framework
+- Chrome Extensions team for the platform
+- Phantom team for wallet integration capabilities
+- Tailwind CSS for utility-first styling
+
+## 📞 Support
+
+For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/pasindupiumal03/FlowKey-Chrome-Extension/issues).
+
+---
+
+**FlowKey** - Streamline your browsing experience with intelligent bookmark management and wallet integration.
