@@ -4,10 +4,12 @@ import {
   getFromStorage,
 } from "./controllers/storageController.js";
 import { createRoot } from "react-dom/client";
+import "./index.css";
 
 
 function Popup() {
-  return <div className="container"></div>;
+  return <div className="w-full h-full bg-black text-white">
+  </div>;
 }
 
 const root = createRoot(document.getElementById("react-target"));
