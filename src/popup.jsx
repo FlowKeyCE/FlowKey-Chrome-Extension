@@ -15,6 +15,21 @@ function Popup() {
   const [bookmarks, setBookmarks] = useState([]);
   const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
   const [editingBookmark, setEditingBookmark] = useState(null); // For editing existing bookmarks
+  const [currentTabInfo, setCurrentTabInfo] = useState(null); // For auto-filling current tab data
+
+  // Function to get current tab information
+  const getCurrentTabInfo = async () => {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      return {
+        title: tab.title,
+        url: tab.url
+      };
+    } catch (error) {
+      console.error('Error getting tab info:', error);
+      return null;
+    }
+  };
 
   const handlePhantomConnect = () => {
     console.log("Connecting to Phantom wallet...");
@@ -28,6 +43,14 @@ function Popup() {
 
   const handleAddBookmark = () => {
     setEditingBookmark(null); // Clear editing state for new bookmark
+    setCurrentTabInfo(null); // Clear tab info for manual entry
+    setCurrentPage('addBookmark');
+  };
+
+  const handleAddCurrentTabBookmark = async () => {
+    setEditingBookmark(null); // Clear editing state
+    const tabInfo = await getCurrentTabInfo();
+    setCurrentTabInfo(tabInfo);
     setCurrentPage('addBookmark');
   };
 
@@ -38,6 +61,7 @@ function Popup() {
 
   const handleBackToBookmarks = () => {
     setEditingBookmark(null); // Clear editing state
+    setCurrentTabInfo(null); // Clear tab info
     setCurrentPage('bookmarks');
   };
 
@@ -78,6 +102,7 @@ function Popup() {
         <BookmarksPage 
           onBack={handleBackToWelcome}
           onAddBookmark={handleAddBookmark}
+          onAddCurrentTabBookmark={handleAddCurrentTabBookmark}
           onEditBookmark={handleEditBookmark}
           onDeleteBookmark={handleDeleteBookmark}
           onReorderBookmarks={handleReorderBookmarks}
@@ -89,6 +114,7 @@ function Popup() {
           onBack={handleBackToBookmarks}
           onSave={handleSaveBookmark}
           editingBookmark={editingBookmark}
+          currentTabInfo={currentTabInfo}
         />
       )}
       {currentPage === 'bookmarkSaved' && (

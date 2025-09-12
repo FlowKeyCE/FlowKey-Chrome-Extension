@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function BookmarksPage({ onBack, onAddBookmark, onEditBookmark, onDeleteBookmark, onReorderBookmarks, bookmarks = [] }) {
+function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditBookmark, onDeleteBookmark, onReorderBookmarks, bookmarks = [] }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookmarkToDelete, setBookmarkToDelete] = useState(null);
   const [draggedBookmark, setDraggedBookmark] = useState(null);
@@ -15,7 +15,9 @@ function BookmarksPage({ onBack, onAddBookmark, onEditBookmark, onDeleteBookmark
   };
 
   const handleAddToBookmarks = () => {
-    console.log("Adding current site to bookmarks...");
+    if (onAddCurrentTabBookmark) {
+      onAddCurrentTabBookmark();
+    }
   };
 
   const handleAddWebsite = () => {
@@ -123,7 +125,7 @@ function BookmarksPage({ onBack, onAddBookmark, onEditBookmark, onDeleteBookmark
 
   const handleFileClick = () => {
     // Replace with actual FlowKey documentation URL
-    window.open('https://github.com/pasindupiumal03/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+    window.open('https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
   };
 
   const handleTwitterClick = () => {

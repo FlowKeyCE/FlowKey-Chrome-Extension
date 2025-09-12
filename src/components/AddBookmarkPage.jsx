@@ -1,9 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function AddBookmarkPage({ onBack, onSave, editingBookmark }) {
-  const [bookmarkName, setBookmarkName] = useState(editingBookmark?.name || "");
-  const [bookmarkUrl, setBookmarkUrl] = useState(editingBookmark?.url || "");
-  const [selectedIcon, setSelectedIcon] = useState(editingBookmark?.icon || "link"); // link, discord, telegram, twitter
+function AddBookmarkPage({ onBack, onSave, editingBookmark, currentTabInfo }) {
+  const [bookmarkName, setBookmarkName] = useState("");
+  const [bookmarkUrl, setBookmarkUrl] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState("link"); // link, discord, telegram, twitter
+
+  // Effect to populate form based on editing or current tab data
+  useEffect(() => {
+    if (editingBookmark) {
+      // Editing existing bookmark
+      setBookmarkName(editingBookmark.name || "");
+      setBookmarkUrl(editingBookmark.url || "");
+      setSelectedIcon(editingBookmark.icon || "link");
+    } else if (currentTabInfo) {
+      // Adding current tab as bookmark
+      setBookmarkName(currentTabInfo.title || "");
+      setBookmarkUrl(currentTabInfo.url || "");
+      setSelectedIcon("link"); // Default to link icon for web pages
+    } else {
+      // Manual entry
+      setBookmarkName("");
+      setBookmarkUrl("");
+      setSelectedIcon("link");
+    }
+  }, [editingBookmark, currentTabInfo]);
 
   const iconOptions = [
     { id: "link", iconPath: "./assets/icons/Internet-white.png", alt: "Link" },
@@ -36,7 +56,7 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark }) {
   };
 
   const handleFileClick = () => {
-    window.open('https://github.com/pasindupiumal03/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+    window.open('https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
   };
 
   const handleTwitterClick = () => {
@@ -44,144 +64,143 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark }) {
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-4 relative">
+    <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-3 relative overflow-hidden">
       {/* Solid color overlay */}
       <div className="absolute inset-0" style={{ backgroundColor: '#101828' }}></div>
       
       <div className="relative z-10 flex flex-col h-full">
         {/* Header with Logo */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
             <img 
               src="./assets/icons/flowkey_logo-removebg.png" 
               alt="FlowKey Logo" 
-              className="w-12 h-12 object-contain"
+              className="w-8 h-8 object-contain"
             />
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 bg-white rounded-lg p-6 text-black relative overflow-auto">
+        {/* Main Content - Fixed height to prevent overflow */}
+        <div className="flex-1 bg-white rounded-lg p-4 text-black relative overflow-hidden flex flex-col min-h-0">
           {/* Large bookmark icon at top */}
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="flex justify-center">
-                <img 
-                    src="./assets/icons/book-mark.png" 
-                    alt="Empty Bookmarks" 
-                    className=" max-w-full h-auto"
-                    style={{ maxHeight: '120px' }}
-                />
+          <div className="flex justify-center mb-4 flex-shrink-0">
+            <img 
+              src="./assets/icons/book-mark.png" 
+              alt="Empty Bookmarks" 
+              className="max-w-full h-auto"
+              style={{ maxHeight: '50px' }}
+            />
+          </div>
+
+          {/* Form Fields Container */}
+          <div className="flex-1 flex flex-col space-y-4 min-h-0">
+            {/* Name Field */}
+            <div className="flex-shrink-0">
+              <label className="block text-gray-600 text-sm font-medium mb-2">
+                Name
+              </label>
+              <input
+                type="text"
+                value={bookmarkName}
+                onChange={(e) => setBookmarkName(e.target.value)}
+                className="w-full bg-gray-800 text-white p-3 text-sm rounded-lg border-none outline-none"
+                placeholder="Enter bookmark name"
+              />
+            </div>
+
+            {/* URL Field */}
+            <div className="flex-shrink-0">
+              <label className="block text-gray-600 text-sm font-medium mb-2">
+                Url
+              </label>
+              <input
+                type="url"
+                value={bookmarkUrl}
+                onChange={(e) => setBookmarkUrl(e.target.value)}
+                className="w-full bg-gray-800 text-white p-3 text-sm rounded-lg border-none outline-none"
+                placeholder="Enter website URL"
+              />
+            </div>
+
+            {/* Icon Selection */}
+            <div className="flex-shrink-0">
+              <label className="block text-gray-600 text-sm font-medium mb-3">
+                Choose an icon
+              </label>
+              <div className="flex space-x-3 justify-center">
+                {iconOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedIcon(option.id)}
+                    className={`w-14 h-14 rounded-lg flex items-center justify-center transition-all ${
+                      selectedIcon === option.id ? 'shadow-lg' : 'opacity-60 hover:opacity-100'
+                    }`}
+                    style={{ 
+                      backgroundColor: selectedIcon === option.id ? '#6F4FFF' : '#969eac'
+                    }}
+                  >
+                    <img 
+                      src={option.iconPath} 
+                      alt={option.alt} 
+                      className="w-7 h-7 object-contain"
+                    />
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Name Field */}
-          <div className="mb-6">
-            <label className="block text-gray-600 text-sm font-medium mb-2">
-              Name
-            </label>
-            <input
-              type="text"
-              value={bookmarkName}
-              onChange={(e) => setBookmarkName(e.target.value)}
-              className="w-full bg-gray-800 text-white p-3 rounded-lg border-none outline-none"
-              placeholder="Enter bookmark name"
-            />
-          </div>
-
-          {/* URL Field */}
-          <div className="mb-6">
-            <label className="block text-gray-600 text-sm font-medium mb-2">
-              Url
-            </label>
-            <input
-              type="url"
-              value={bookmarkUrl}
-              onChange={(e) => setBookmarkUrl(e.target.value)}
-              className="w-full bg-gray-800 text-white p-3 rounded-lg border-none outline-none"
-              placeholder="Enter website URL"
-            />
-          </div>
-
-          {/* Icon Selection */}
-          <div className="mb-8">
-            <label className="block text-gray-600 text-sm font-medium mb-3">
-              Choose an icon
-            </label>
-            <div className="flex space-x-3">
-              {iconOptions.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setSelectedIcon(option.id)}
-                  className={`w-16 h-16 rounded-xl flex items-center justify-center transition-all ${
-                    selectedIcon === option.id ? 'shadow-lg' : 'opacity-60 hover:opacity-100'
-                  }`}
-                  style={{ 
-                    backgroundColor: selectedIcon === option.id ? '#6F4FFF' : '#969eac'
-                  }}
-                >
-                  <img 
-                    src={option.iconPath} 
-                    alt={option.alt} 
-                    className="w-8 h-8 object-contain"
-                  />
-                </button>
-              ))}
+            {/* Action Buttons */}
+            <div className="flex-shrink-0 space-y-3 pt-3">
+              <button
+                onClick={handleSaveBookmark}
+                className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-colors text-sm hover:shadow-lg active:scale-95"
+                style={{ backgroundColor: '#6E4EFF' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
+              >
+                {editingBookmark ? 'Update bookmark' : 'Save to bookmarks'}
+              </button>
+              
+              <button
+                onClick={onBack}
+                className="w-full bg-transparent text-gray-600 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm active:scale-95"
+              >
+                Cancel
+              </button>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3 mt-auto pt-4">
-            <button
-              onClick={handleSaveBookmark}
-              className="w-full text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-lg transition-colors text-sm sm:text-base hover:shadow-lg active:scale-95"
-              style={{ backgroundColor: '#6E4EFF' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
-            >
-              {editingBookmark ? 'Update bookmark' : 'Save to bookmarks'}
-            </button>
-            
-            <button
-              onClick={onBack}
-              className="w-full bg-transparent text-gray-600 font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base active:scale-95"
-            >
-              Cancel
-            </button>
           </div>
         </div>
 
         {/* Bottom Navigation */}
-        <div className="flex justify-center space-x-8 mt-6 pt-4 border-t border-purple-600/30">
+        <div className="flex justify-center space-x-8 mt-4 pt-3 border-t border-purple-600/30 flex-shrink-0">
           <button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            className="p-1 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleLinkClick}
           >
             <img 
               src="./assets/icons/link.png" 
               alt="Link" 
-              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
+              className="w-4 h-4 transition-all duration-300 hover:brightness-125"
             />
           </button>
           <button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            className="p-1 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleFileClick}
           >
             <img 
               src="./assets/icons/file.png" 
               alt="File" 
-              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
+              className="w-4 h-4 transition-all duration-300 hover:brightness-125"
             />
           </button>
           <button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            className="p-1 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleTwitterClick}
           >
             <img 
               src="./assets/icons/twitter.png" 
               alt="Twitter" 
-              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
+              className="w-4 h-4 transition-all duration-300 hover:brightness-125"
             />
           </button>
         </div>
