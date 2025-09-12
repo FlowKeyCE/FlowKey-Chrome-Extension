@@ -1,6 +1,14 @@
 import React from "react";
+import { connectWallet } from "../controllers/walletController";
 
 function WelcomePage({ onConnect }) {
+  const handleConnect = async () => {
+    const address = await connectWallet();
+    if (address && onConnect) {
+      onConnect(address); // send address to parent
+    }
+  };
+
   return (
     <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white flex flex-col items-center justify-center p-8 relative">
       {/* Solid color overlay */}
