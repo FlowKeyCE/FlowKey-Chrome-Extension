@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 
-function BookmarksPage({ onBack }) {
-  const [bookmarks, setBookmarks] = useState([]);
-
+function BookmarksPage({ onBack, onAddBookmark, bookmarks = [] }) {
   const handleOpenAllBookmarks = () => {
     console.log("Opening all bookmarks...");
   };
@@ -12,7 +10,9 @@ function BookmarksPage({ onBack }) {
   };
 
   const handleAddWebsite = () => {
-    console.log("Add website to bookmarks...");
+    if (onAddBookmark) {
+      onAddBookmark();
+    }
   };
 
   const handleLinkClick = () => {
