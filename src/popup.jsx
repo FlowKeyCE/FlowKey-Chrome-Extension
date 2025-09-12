@@ -8,10 +8,12 @@ import "./index.css";
 import WelcomePage from "./components/WelcomePage.jsx";
 import BookmarksPage from "./components/BookmarksPage.jsx";
 import AddBookmarkPage from "./components/AddBookmarkPage.jsx";
+import BookmarkSavedPage from "./components/BookmarkSavedPage.jsx";
 
 function Popup() {
-  const [currentPage, setCurrentPage] = useState('welcome'); // 'welcome', 'bookmarks', or 'addBookmark'
+  const [currentPage, setCurrentPage] = useState('welcome'); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
   const [bookmarks, setBookmarks] = useState([]);
+  const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
 
   const handlePhantomConnect = () => {
     console.log("Connecting to Phantom wallet...");
@@ -33,8 +35,13 @@ function Popup() {
 
   const handleSaveBookmark = (bookmarkData) => {
     setBookmarks(prev => [...prev, bookmarkData]);
-    setCurrentPage('bookmarks');
+    setLastSavedBookmark(bookmarkData);
+    setCurrentPage('bookmarkSaved');
     console.log("Bookmark saved:", bookmarkData);
+  };
+
+  const handleBackToBookmarksFromSaved = () => {
+    setCurrentPage('bookmarks');
   };
 
   return (
@@ -53,6 +60,12 @@ function Popup() {
         <AddBookmarkPage 
           onBack={handleBackToBookmarks}
           onSave={handleSaveBookmark}
+        />
+      )}
+      {currentPage === 'bookmarkSaved' && (
+        <BookmarkSavedPage 
+          onBackToBookmarks={handleBackToBookmarksFromSaved}
+          bookmarkData={lastSavedBookmark}
         />
       )}
     </>
