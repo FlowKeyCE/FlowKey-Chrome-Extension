@@ -136,7 +136,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
   return (
     <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-4 relative">
       {/* Solid color overlay */}
-      <div className="absolute inset-0" style={{ backgroundColor: '#101828' }}></div>
+      <div className="absolute inset-0" style={{ backgroundColor: '#111728' }}></div>
       
       <div className="relative z-10 flex flex-col h-full">
         {/* Header with Logo */}

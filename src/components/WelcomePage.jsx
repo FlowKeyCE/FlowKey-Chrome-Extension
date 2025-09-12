@@ -4,7 +4,7 @@ function WelcomePage({ onConnect }) {
   return (
     <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white flex flex-col items-center justify-center p-8 relative">
       {/* Solid color overlay */}
-      <div className="absolute inset-0" style={{ backgroundColor: '#101828' }}></div>
+      <div className="absolute inset-0" style={{ backgroundColor: '#111728' }}></div>
       
       {/* Content container */}
       <div className="relative z-10 flex flex-col items-center justify-center space-y-8 text-center">
