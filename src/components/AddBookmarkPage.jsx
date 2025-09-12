@@ -56,7 +56,7 @@ function AddBookmarkPage({ onBack, onSave }) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-white rounded-lg p-6 text-black relative overflow-hidden">
+        <div className="flex-1 bg-white rounded-lg p-6 text-black relative overflow-auto">
           {/* Large bookmark icon at top */}
           <div className="flex justify-center mb-8">
             <div className="relative">
@@ -149,25 +149,34 @@ function AddBookmarkPage({ onBack, onSave }) {
 
         {/* Bottom Navigation */}
         <div className="flex justify-center space-x-8 mt-6 pt-4 border-t border-purple-600/30">
-          <button className="p-2" onClick={handleLinkClick}>
+          <button 
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            onClick={handleLinkClick}
+          >
             <img 
               src="./assets/icons/link.png" 
               alt="Link" 
-              className="w-6 h-6"
+              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </button>
-          <button className="p-2" onClick={handleFileClick}>
+          <button 
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            onClick={handleFileClick}
+          >
             <img 
               src="./assets/icons/file.png" 
               alt="File" 
-              className="w-6 h-6"
+              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </button>
-          <button className="p-2" onClick={handleTwitterClick}>
+          <button 
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+            onClick={handleTwitterClick}
+          >
             <img 
               src="./assets/icons/twitter.png" 
               alt="Twitter" 
-              className="w-6 h-6"
+              className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </button>
         </div>
