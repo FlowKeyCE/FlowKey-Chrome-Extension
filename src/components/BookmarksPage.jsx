@@ -177,8 +177,8 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
         </div>
 
         {/* Bookmarks Section */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center mb-4">
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex items-center mb-4 flex-shrink-0">
             <button onClick={onBack} className="mr-3">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -189,120 +189,125 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
           {/* Bookmarks List or Empty State */}
           {bookmarks.length > 0 ? (
-            <div className="flex-1 space-y-3 mb-6">
-              {bookmarks.map((bookmark, index) => (
-                <div 
-                  key={bookmark.id} 
-                  className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
-                    dragOverIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
-                  } ${draggedBookmark?.index === index ? 'opacity-50' : ''}`}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, bookmark, index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
-                >
-                  {/* Left side - Drag handle, Icon, Name */}
-                  <div className="flex items-center space-x-3">
-                    {/* Drag Handle */}
-                    <div className="cursor-move hover:text-white">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
-                      </svg>
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Scrollable Bookmarks List */}
+              <div className="flex-1 space-y-3 overflow-y-auto min-h-0 scrollbar-hide">
+                {bookmarks.map((bookmark, index) => (
+                  <div 
+                    key={bookmark.id} 
+                    className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
+                      dragOverIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
+                    } ${draggedBookmark?.index === index ? 'opacity-50' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, bookmark, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    {/* Left side - Drag handle, Icon, Name */}
+                    <div className="flex items-center space-x-3">
+                      {/* Drag Handle */}
+                      <div className="cursor-move hover:text-white">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                      </div>
+                      
+                      {/* Record Indicator */}
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      
+                      {/* Bookmark Icon */}
+                      <div 
+                        className="w-8 h-8 rounded flex items-center justify-center"
+                        style={{ backgroundColor: '#6F4FFF' }}
+                      >
+                        <img 
+                          src={getBookmarkIconPath(bookmark.icon)}
+                          alt={bookmark.icon}
+                          className="w-5 h-5 object-contain"
+                        />
+                      </div>
+                      
+                      {/* Bookmark Name */}
+                      <span className="text-white font-medium">{bookmark.name}</span>
                     </div>
                     
-                    {/* Record Indicator */}
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    
-                    {/* Bookmark Icon */}
-                    <div 
-                      className="w-8 h-8 rounded flex items-center justify-center"
-                      style={{ backgroundColor: '#6F4FFF' }}
-                    >
-                      <img 
-                        src={getBookmarkIconPath(bookmark.icon)}
-                        alt={bookmark.icon}
-                        className="w-5 h-5 object-contain"
-                      />
+                    {/* Right side - Action buttons */}
+                    <div className="flex items-center space-x-2">
+                      {/* Open in new tab */}
+                      <button 
+                        onClick={() => handleOpenBookmark(bookmark.url)}
+                        className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                        title="Open bookmark"
+                      >
+                        <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </button>
+                      
+                      {/* Edit bookmark */}
+                      <button 
+                        onClick={() => handleEditBookmark(bookmark)}
+                        className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                        title="Edit bookmark"
+                      >
+                        <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      
+                      {/* Delete bookmark */}
+                      <button 
+                        onClick={() => handleDeleteClick(bookmark)}
+                        className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                        title="Delete bookmark"
+                      >
+                        <svg className="w-4 h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    
-                    {/* Bookmark Name */}
-                    <span className="text-white font-medium">{bookmark.name}</span>
-                  </div>
-                  
-                  {/* Right side - Action buttons */}
-                  <div className="flex items-center space-x-2">
-                    {/* Open in new tab */}
-                    <button 
-                      onClick={() => handleOpenBookmark(bookmark.url)}
-                      className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                      title="Open bookmark"
-                    >
-                      <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </button>
-                    
-                    {/* Edit bookmark */}
-                    <button 
-                      onClick={() => handleEditBookmark(bookmark)}
-                      className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                      title="Edit bookmark"
-                    >
-                      <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                    
-                    {/* Delete bookmark */}
-                    <button 
-                      onClick={() => handleDeleteClick(bookmark)}
-                      className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                      title="Delete bookmark"
-                    >
-                      <svg className="w-4 h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-              
-              {/* Add Website Button */}
-              <button 
-                onClick={handleAddWebsite}
-                className="w-full py-4 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
-              >
-                <span className="text-2xl text-gray-400">+</span>
-                <span className="text-gray-400">Add a website to bookmarks</span>
-              </button>
-            </div>
-          ) : (
-            /* Empty State */
-            <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4">
-              <div className="flex justify-center">
-                <img 
-                  src="./assets/icons/book-mark.png" 
-                  alt="Empty Bookmarks" 
-                  className="opacity-50 max-w-full h-auto"
-                  style={{ maxHeight: '120px' }}
-                />
+                
+                {/* Add Website Button - Always visible */}
+                <div className="flex-shrink-0 mt-4">
+                  <button 
+                    onClick={handleAddWebsite}
+                    className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
+                  >
+                    <span className="text-2xl text-gray-400">+</span>
+                    <span className="text-gray-400">Add a website to bookmarks</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-center text-sm opacity-80 max-w-sm">
-                Looks empty...add your first bookmark
-              </p>
-              
-              <button 
-                onClick={handleAddWebsite}
-                className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
-              >
-                <span className="text-xl">+</span>
-                <span>Add a website to bookmarks</span>
-              </button>
-            </div>
-          )}
-        </div>
+            ) : (
+              /* Empty State */
+              <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4">
+                <div className="flex justify-center">
+                  <img 
+                    src="./assets/icons/book-mark.png" 
+                    alt="Empty Bookmarks" 
+                    className="opacity-50 max-w-full h-auto"
+                    style={{ maxHeight: '120px' }}
+                  />
+                </div>
+                <p className="text-center text-sm opacity-80 max-w-sm">
+                  Looks empty...add your first bookmark
+                </p>
+                
+                <button 
+                  onClick={handleAddWebsite}
+                  className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
+                >
+                  <span className="text-xl">+</span>
+                  <span>Add a website to bookmarks</span>
+                </button>
+              </div>
+            )}
+          </div>
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (

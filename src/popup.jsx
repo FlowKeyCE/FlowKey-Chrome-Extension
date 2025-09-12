@@ -60,7 +60,7 @@ function Popup() {
       return null;
     }
   };
-
+  
   const handlePhantomConnect = () => {
     console.log("Connecting to Phantom wallet...");
     // Simulate successful connection and navigate to bookmarks
