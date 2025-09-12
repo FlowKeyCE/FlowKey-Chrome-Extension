@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-function AddBookmarkPage({ onBack, onSave }) {
-  const [bookmarkName, setBookmarkName] = useState("");
-  const [bookmarkUrl, setBookmarkUrl] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState("link"); // link, discord, telegram, twitter
+function AddBookmarkPage({ onBack, onSave, editingBookmark }) {
+  const [bookmarkName, setBookmarkName] = useState(editingBookmark?.name || "");
+  const [bookmarkUrl, setBookmarkUrl] = useState(editingBookmark?.url || "");
+  const [selectedIcon, setSelectedIcon] = useState(editingBookmark?.icon || "link"); // link, discord, telegram, twitter
 
   const iconOptions = [
     { id: "link", iconPath: "./assets/icons/Internet-white.png", alt: "Link" },
@@ -13,17 +13,22 @@ function AddBookmarkPage({ onBack, onSave }) {
   ];
 
   const handleSaveBookmark = () => {
+    if (!bookmarkName.trim() || !bookmarkUrl.trim()) {
+      alert('Please fill in both name and URL fields');
+      return;
+    }
+
     const bookmarkData = {
-      name: bookmarkName,
-      url: bookmarkUrl,
+      name: bookmarkName.trim(),
+      url: bookmarkUrl.trim(),
       icon: selectedIcon,
-      id: Date.now() // Simple ID generation
+      id: editingBookmark?.id || Date.now() // Use existing ID for editing, new ID for new bookmark
     };
     
     if (onSave) {
       onSave(bookmarkData);
     }
-    console.log("Saving bookmark:", bookmarkData);
+    console.log(editingBookmark ? "Updating bookmark:" : "Saving bookmark:", bookmarkData);
   };
 
   const handleLinkClick = () => {
@@ -135,7 +140,7 @@ function AddBookmarkPage({ onBack, onSave }) {
               onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
             >
-              Save to bookmarks
+              {editingBookmark ? 'Update bookmark' : 'Save to bookmarks'}
             </button>
             
             <button

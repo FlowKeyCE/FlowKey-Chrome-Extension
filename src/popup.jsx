@@ -14,6 +14,7 @@ function Popup() {
   const [currentPage, setCurrentPage] = useState('welcome'); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
   const [bookmarks, setBookmarks] = useState([]);
   const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
+  const [editingBookmark, setEditingBookmark] = useState(null); // For editing existing bookmarks
 
   const handlePhantomConnect = () => {
     console.log("Connecting to Phantom wallet...");
@@ -26,18 +27,42 @@ function Popup() {
   };
 
   const handleAddBookmark = () => {
+    setEditingBookmark(null); // Clear editing state for new bookmark
+    setCurrentPage('addBookmark');
+  };
+
+  const handleEditBookmark = (bookmark) => {
+    setEditingBookmark(bookmark);
     setCurrentPage('addBookmark');
   };
 
   const handleBackToBookmarks = () => {
+    setEditingBookmark(null); // Clear editing state
     setCurrentPage('bookmarks');
   };
 
   const handleSaveBookmark = (bookmarkData) => {
-    setBookmarks(prev => [...prev, bookmarkData]);
+    if (editingBookmark) {
+      // Update existing bookmark
+      setBookmarks(prev => prev.map(bookmark => 
+        bookmark.id === editingBookmark.id ? { ...bookmarkData, id: editingBookmark.id } : bookmark
+      ));
+      setEditingBookmark(null);
+    } else {
+      // Add new bookmark
+      setBookmarks(prev => [...prev, bookmarkData]);
+    }
     setLastSavedBookmark(bookmarkData);
-    setCurrentPage('bookmarkSaved');
+    setCurrentPage('bookmarks'); // Navigate directly to bookmarks page
     console.log("Bookmark saved:", bookmarkData);
+  };
+
+  const handleDeleteBookmark = (bookmarkId) => {
+    setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+  };
+
+  const handleReorderBookmarks = (newBookmarks) => {
+    setBookmarks(newBookmarks);
   };
 
   const handleBackToBookmarksFromSaved = () => {
@@ -53,6 +78,9 @@ function Popup() {
         <BookmarksPage 
           onBack={handleBackToWelcome}
           onAddBookmark={handleAddBookmark}
+          onEditBookmark={handleEditBookmark}
+          onDeleteBookmark={handleDeleteBookmark}
+          onReorderBookmarks={handleReorderBookmarks}
           bookmarks={bookmarks}
         />
       )}
@@ -60,6 +88,7 @@ function Popup() {
         <AddBookmarkPage 
           onBack={handleBackToBookmarks}
           onSave={handleSaveBookmark}
+          editingBookmark={editingBookmark}
         />
       )}
       {currentPage === 'bookmarkSaved' && (
