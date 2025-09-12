@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import {
   saveToStorage,
   getFromStorage,
+  getCurrentTab,
+  saveBookmarks,
+  getBookmarks,
+  addBookmark,
+  updateBookmark,
+  deleteBookmark,
+  reorderBookmarks,
 } from "./controllers/storageController.js";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -16,15 +23,38 @@ function Popup() {
   const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
   const [editingBookmark, setEditingBookmark] = useState(null); // For editing existing bookmarks
   const [currentTabInfo, setCurrentTabInfo] = useState(null); // For auto-filling current tab data
+  const [loading, setLoading] = useState(false); // For loading states
 
-  // Function to get current tab information
+  // Load bookmarks from storage on component mount
+  useEffect(() => {
+    loadBookmarksFromStorage();
+  }, []);
+
+  const loadBookmarksFromStorage = async () => {
+    try {
+      setLoading(true);
+      const storedBookmarks = await getBookmarks();
+      setBookmarks(storedBookmarks);
+      console.log('Loaded bookmarks from storage:', storedBookmarks);
+    } catch (error) {
+      console.error('Error loading bookmarks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to get current tab information using enhanced storageController
   const getCurrentTabInfo = async () => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      return {
-        title: tab.title,
-        url: tab.url
-      };
+      const tab = await getCurrentTab();
+      if (tab) {
+        return {
+          title: tab.title,
+          url: tab.url,
+          favIconUrl: tab.favIconUrl
+        };
+      }
+      return null;
     } catch (error) {
       console.error('Error getting tab info:', error);
       return null;
@@ -65,28 +95,72 @@ function Popup() {
     setCurrentPage('bookmarks');
   };
 
-  const handleSaveBookmark = (bookmarkData) => {
-    if (editingBookmark) {
-      // Update existing bookmark
-      setBookmarks(prev => prev.map(bookmark => 
-        bookmark.id === editingBookmark.id ? { ...bookmarkData, id: editingBookmark.id } : bookmark
-      ));
-      setEditingBookmark(null);
-    } else {
-      // Add new bookmark
-      setBookmarks(prev => [...prev, bookmarkData]);
+  const handleSaveBookmark = async (bookmarkData) => {
+    try {
+      setLoading(true);
+      let savedBookmark;
+      
+      if (editingBookmark) {
+        // Update existing bookmark using storageController
+        savedBookmark = await updateBookmark(editingBookmark.id, bookmarkData);
+        if (savedBookmark) {
+          setBookmarks(prev => prev.map(bookmark => 
+            bookmark.id === editingBookmark.id ? savedBookmark : bookmark
+          ));
+        }
+        setEditingBookmark(null);
+      } else {
+        // Add new bookmark using storageController
+        savedBookmark = await addBookmark(bookmarkData);
+        if (savedBookmark) {
+          setBookmarks(prev => [...prev, savedBookmark]);
+        }
+      }
+      
+      if (savedBookmark) {
+        setLastSavedBookmark(savedBookmark);
+        setCurrentPage('bookmarks'); // Navigate directly to bookmarks page
+        console.log("Bookmark saved:", savedBookmark);
+      } else {
+        alert('Failed to save bookmark. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving bookmark:', error);
+      alert('Error saving bookmark. Please try again.');
+    } finally {
+      setLoading(false);
+      setCurrentTabInfo(null); // Clear tab info after saving
     }
-    setLastSavedBookmark(bookmarkData);
-    setCurrentPage('bookmarks'); // Navigate directly to bookmarks page
-    console.log("Bookmark saved:", bookmarkData);
   };
 
-  const handleDeleteBookmark = (bookmarkId) => {
-    setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+  const handleDeleteBookmark = async (bookmarkId) => {
+    try {
+      setLoading(true);
+      const success = await deleteBookmark(bookmarkId);
+      if (success) {
+        setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+        console.log('Bookmark deleted successfully');
+      } else {
+        alert('Failed to delete bookmark. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting bookmark:', error);
+      alert('Error deleting bookmark. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReorderBookmarks = (newBookmarks) => {
-    setBookmarks(newBookmarks);
+  const handleReorderBookmarks = async (newBookmarks) => {
+    try {
+      const reorderedBookmarks = await reorderBookmarks(newBookmarks);
+      if (reorderedBookmarks) {
+        setBookmarks(reorderedBookmarks);
+        console.log('Bookmarks reordered successfully');
+      }
+    } catch (error) {
+      console.error('Error reordering bookmarks:', error);
+    }
   };
 
   const handleBackToBookmarksFromSaved = () => {
@@ -95,6 +169,14 @@ function Popup() {
 
   return (
     <>
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 text-center">
+            <div className="animate-spin w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p className="text-gray-600">Processing...</p>
+          </div>
+        </div>
+      )}
       {currentPage === 'welcome' && (
         <WelcomePage onConnect={handlePhantomConnect} />
       )}
