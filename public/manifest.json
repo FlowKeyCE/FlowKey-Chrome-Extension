@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Powerful bookmark management and layout organization with Phantom wallet integration",
   "manifest_version": 3,
-  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content.js"] }],
+  "content_scripts": [
+    { "matches": ["<all_urls>"], "js": ["content.js"] }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "FlowKey",
@@ -24,5 +26,12 @@
     "64": "./assets/icons/flowkey_logo_64.png",
     "128": "./assets/icons/flowkey_logo_128.png"
   },
-  "permissions": ["storage", "bookmarks", "tabs", "activeTab"]
+  "permissions": ["storage", "bookmarks", "tabs", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["inpage.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
