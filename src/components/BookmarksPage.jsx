@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   getCurrentWindowTabs,
   addLayout,
@@ -336,7 +337,12 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-4 relative">
+    <motion.div
+      className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white p-4 relative"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+    >
       {/* Solid color overlay */}
       <div className="absolute inset-0" style={{ backgroundColor: '#111728' }}></div>
       
@@ -354,28 +360,32 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
         {/* Action Buttons */}
         <div className="space-y-3 mb-6">
-          <button 
+          <motion.button 
             onClick={handleOpenAllBookmarks}
             className="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
           >
             <span>Open All Bookmarks</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-          </button>
+          </motion.button>
 
-          <button 
+          <motion.button 
             onClick={handleAddToBookmarks}
             className="w-full text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
             style={{ backgroundColor: '#6E4EFF' }}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
           >
             <span>Add to bookmarks</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
-          </button>
+          </motion.button>
         </div>
 
         {/* Main Content Section */}
@@ -414,10 +424,16 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                 <div className="flex-1 flex flex-col min-h-0">
                   {/* Scrollable Bookmarks List */}
                   <div className="flex-1 space-y-3 overflow-y-auto min-h-0 scrollbar-hide">
-                    {bookmarks.map((bookmark, index) => (
-                      <div 
-                        key={bookmark.id} 
-                        className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
+                    <AnimatePresence initial={false}>
+                      {bookmarks.map((bookmark, index) => (
+                        <motion.div 
+                          key={bookmark.id}
+                          layout
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                          className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
                           dragOverIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
                         } ${draggedBookmark?.index === index ? 'opacity-50' : ''}`}
                         draggable
@@ -426,6 +442,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, index)}
                         onDragEnd={handleDragEnd}
+                          whileHover={{ y: -2 }}
                       >
                         {/* Left side - Drag handle, Icon, Name */}
                         <div className="flex items-center space-x-3">
@@ -437,17 +454,17 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                           </div>
                           
                           {/* Record Indicator */}
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <div className="w-2 h-2 min-w-2 min-h-2 bg-red-500 rounded-full"></div>
                           
                           {/* Bookmark Icon */}
                           <div 
-                            className="w-8 h-8 rounded flex items-center justify-center"
+                            className="w-8 h-8 min-w-8 min-h-8 rounded flex items-center justify-center"
                             style={{ backgroundColor: '#6F4FFF' }}
                           >
                             <img 
                               src={getBookmarkIconPath(bookmark.icon)}
                               alt={bookmark.icon}
-                              className="w-5 h-5 object-contain"
+                              className="w-5 h-5 min-w-5 min-h-5 object-contain"
                             />
                           </div>
                           
@@ -456,58 +473,68 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                         </div>
                         
                         {/* Right side - Action buttons */}
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center min-w-fit">
                           {/* Open in new tab */}
-                          <button 
+                          <motion.button 
                             onClick={() => handleOpenBookmark(bookmark.url)}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Open bookmark"
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
-                          </button>
+                          </motion.button>
                           
                           {/* Edit bookmark */}
-                          <button 
+                          <motion.button 
                             onClick={() => handleEditBookmark(bookmark)}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Edit bookmark"
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
-                          </button>
+                          </motion.button>
                           
                           {/* Delete bookmark */}
-                          <button 
+                          <motion.button 
                             onClick={() => handleDeleteClick(bookmark)}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Delete bookmark"
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </motion.button>
                         </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                   
                   {/* Add Website Button - Always visible */}
                   <div className="flex-shrink-0 mt-4">
-                    <button 
+                    <motion.button 
                       onClick={handleAddWebsite}
                       className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       <span className="text-2xl text-gray-400">+</span>
                       <span className="text-gray-400">Add a website to bookmarks</span>
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               ) : (
                 /* Bookmarks Empty State */
-                <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4">
+                <motion.div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
                   <div className="flex justify-center">
                     <img 
                       src="./assets/icons/book-mark.png" 
@@ -520,14 +547,16 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                     Looks empty...add your first bookmark
                   </p>
                   
-                  <button 
+                  <motion.button 
                     onClick={handleAddWebsite}
                     className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <span className="text-xl">+</span>
                     <span>Add a website to bookmarks</span>
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               )}
             </>
           )}
@@ -540,10 +569,16 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                 <div className="flex-1 flex flex-col min-h-0">
                   {/* Scrollable Layouts List */}
                   <div className="flex-1 space-y-3 overflow-y-auto min-h-0 scrollbar-hide">
-                    {layouts.map((layout, index) => (
-                      <div 
-                        key={layout.id} 
-                        className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
+                    <AnimatePresence initial={false}>
+                      {layouts.map((layout, index) => (
+                        <motion.div 
+                          key={layout.id}
+                          layout
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                          className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
                           dragOverLayoutIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
                         } ${draggedLayout?.index === index ? 'opacity-50' : ''}`}
                         draggable
@@ -552,6 +587,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                         onDragLeave={handleLayoutDragLeave}
                         onDrop={(e) => handleLayoutDrop(e, index)}
                         onDragEnd={handleLayoutDragEnd}
+                          whileHover={{ y: -2 }}
                       >
                         {/* Left side - Drag handle, Icon, Name */}
                         <div className="flex items-center space-x-3">
@@ -607,7 +643,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                         {/* Right side - Action buttons */}
                         <div className="flex items-center space-x-2">
                           {/* Open Window - Opens all tabs from layout */}
-                          <button 
+                          <motion.button 
                             onClick={() => {
                               layout.tabs.forEach(tab => {
                                 window.open(tab.url, '_blank');
@@ -615,52 +651,62 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                             }}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Open all tabs in new window"
+                            whileTap={{ scale: 0.95 }}
                           >
                             <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
-                          </button>
+                          </motion.button>
 
                           {/* Edit Layout Name */}
-                          <button 
+                          <motion.button 
                             onClick={() => handleEditLayoutName(layout)}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Edit layout name"
+                            whileTap={{ scale: 0.95 }}
                           >
                             <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
-                          </button>
+                          </motion.button>
                           
                           {/* Delete Layout */}
-                          <button 
+                          <motion.button 
                             onClick={() => handleDeleteLayoutClick(layout)}
                             className="p-1 hover:bg-gray-600/50 rounded transition-colors"
                             title="Delete layout"
+                            whileTap={{ scale: 0.95 }}
                           >
                             <svg className="w-4 h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </motion.button>
                         </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                   
                   {/* Add Layout Button */}
                   <div className="flex-shrink-0 mt-4">
-                    <button 
+                    <motion.button 
                       onClick={handleAddLayout}
                       className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       <span className="text-2xl text-gray-400">+</span>
                       <span className="text-gray-400">Add a window to layouts</span>
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               ) : (
                 /* Layouts Empty State */
-                <div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4">
+                <motion.div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
                   <div className="flex justify-center">
                     <img 
                       src="./assets/icons/Squared Menu.png" 
@@ -673,21 +719,32 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                     Looks empty...add your first layout
                   </p>
                   
-                  <button 
+                  <motion.button 
                     onClick={handleAddLayout}
                     className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <span className="text-xl">+</span>
                     <span>Add a window to layouts</span>
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               )}
             </>
           )}
         </div>        {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg">
-            <div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl">
+          <motion.div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
+              initial={{ scale: 0.95, y: 6, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: -6, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <div className="text-center">
                 <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-red-100 mb-3">
                   <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -701,28 +758,39 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                   This action cannot be undone.
                 </p>
                 <div className="flex space-x-2">
-                  <button
+                  <motion.button
                     onClick={handleCancelDelete}
                     className="flex-1 bg-gray-200 text-gray-800 py-2 px-3 rounded-md text-sm hover:bg-gray-300 transition-colors"
+                    whileTap={{ scale: 0.98 }}
                   >
                     No
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     onClick={handleConfirmDelete}
                     className="flex-1 bg-red-600 text-white py-2 px-3 rounded-md text-sm hover:bg-red-700 transition-colors"
+                    whileTap={{ scale: 0.98 }}
                   >
                     Yes
-                  </button>
+                  </motion.button>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Layout Delete Confirmation Modal */}
         {showLayoutDeleteConfirm && (
-          <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg">
-            <div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl">
+          <motion.div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
+              initial={{ scale: 0.95, y: 6, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: -6, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <div className="text-center">
                 <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-red-100 mb-3">
                   <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -736,59 +804,64 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                   This will remove {layoutToDelete?.tabCount} saved tabs.
                 </p>
                 <div className="flex space-x-2">
-                  <button
+                  <motion.button
                     onClick={handleCancelLayoutDelete}
                     className="flex-1 bg-gray-200 text-gray-800 py-2 px-3 rounded-md text-sm hover:bg-gray-300 transition-colors"
+                    whileTap={{ scale: 0.98 }}
                   >
                     No
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     onClick={handleConfirmLayoutDelete}
                     className="flex-1 bg-red-600 text-white py-2 px-3 rounded-md text-sm hover:bg-red-700 transition-colors"
+                    whileTap={{ scale: 0.98 }}
                   >
                     Yes
-                  </button>
+                  </motion.button>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
 
         {/* Bottom Navigation */}
         <div className="flex justify-center space-x-8 mt-6 pt-4 border-t border-purple-600/30">
-          <button 
+          <motion.button 
             className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleLinkClick}
+            whileTap={{ scale: 0.95 }}
           >
             <img 
               src="./assets/icons/link.png" 
               alt="Link" 
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
             className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleFileClick}
+            whileTap={{ scale: 0.95 }}
           >
             <img 
               src="./assets/icons/file.png" 
               alt="File" 
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
             className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
             onClick={handleTwitterClick}
+            whileTap={{ scale: 0.95 }}
           >
             <img 
               src="./assets/icons/twitter.png" 
               alt="Twitter" 
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
-          </button>
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
