@@ -1,90 +1,85 @@
 import React from "react";
-import { connectWallet } from "../controllers/walletController";
+import { motion } from "framer-motion";
 
 function WelcomePage({ onConnect }) {
-  const handleConnect = async () => {
-    const address = await connectWallet();
-    if (address && onConnect) {
-      onConnect(address); // send address to parent
-    }
-  };
-
   return (
-    <div className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white flex flex-col items-center justify-center p-8 relative">
+    <motion.div
+      className="w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-purple-800 text-white flex flex-col items-center justify-center p-8 relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+    >
       {/* Solid color overlay */}
       <div className="absolute inset-0" style={{ backgroundColor: '#111728' }}></div>
-      
+
       {/* Content container */}
       <div className="relative z-10 flex flex-col items-center justify-center space-y-8 text-center">
-        
         {/* FlowKey Logo */}
-        <div className="flex items-center justify-center">
-          <img 
-            src="./assets/icons/flowkey_logo-removebg.png" 
-            alt="FlowKey Logo" 
-            className="w-32 h-32 object-contain"
+        <motion.div
+          className="flex items-center justify-center"
+          initial={{ scale: 0.95, y: 6, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
+          <img
+            src="./assets/icons/flowkey_logo-removebg.png"
+            alt="FlowKey Logo"
+            className="w-28 h-28 object-contain"
           />
-        </div>
+        </motion.div>
 
         {/* Welcome Text */}
-        <div className="space-y-4">
-          <h1 
+        <motion.div className="space-y-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.25 }}>
+          <h1
             className="text-white"
             style={{
-              fontFamily: 'Poppins',
+              fontFamily: 'Poppins Regular',
               fontWeight: '800',
-              fontSize: '48px',
-              lineHeight: '50px',
-              letterSpacing: '0.05em'
+              fontSize: '40px',
+              lineHeight: '42px',
+              letterSpacing: '0.04em'
             }}
           >
             WELCOME TO
           </h1>
-          <h2 
+          <h2
             className="text-white"
             style={{
-              fontFamily: 'Poppins',
+              fontFamily: 'Poppins SemiBold',
               fontWeight: '800',
-              fontSize: '48px',
-              lineHeight: '50px',
-              letterSpacing: '0.05em'
+              fontSize: '44px',
+              lineHeight: '46px',
+              letterSpacing: '0.04em'
             }}
           >
             FLOWKEY
           </h2>
-        </div>
+        </motion.div>
 
         {/* Subtitle */}
-        <p className="text-lg opacity-80 max-w-xs leading-relaxed">
-          Please connect your wallet to access FlowKey Features
-        </p>
+        <motion.p className="text-sm opacity-80 max-w-xs leading-relaxed" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.25 }}>
+          Please connect your wallet to access FlowKey features
+        </motion.p>
 
-        {/* Connect Button */}
-        <button 
+        {/* Connect Button (flat) */}
+        <motion.button
           onClick={onConnect}
-          className="text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 
-                     transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-3"
-          style={{
-            backgroundColor: '#6E4EFF',
-            border: 'none'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#5A3FE6';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = '#6E4EFF';
-          }}
+          className="text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-3"
+          style={{ backgroundColor: '#6E4EFF', border: 'none' }}
+          onMouseEnter={(e) => { e.target.style.backgroundColor = '#5A3FE6'; }}
+          onMouseLeave={(e) => { e.target.style.backgroundColor = '#6E4EFF'; }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <span className="max-w-xs leading-relaxed">Log In with Phantom</span>
-          <img 
-            src="./assets/icons/panthom-wallet.png" 
-            alt="Phantom Wallet" 
+          <span>Log In with Phantom</span>
+          <img
+            src="./assets/icons/panthom-wallet.png"
+            alt="Phantom Wallet"
             className="w-6 h-6 object-contain"
           />
-        </button>
-
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

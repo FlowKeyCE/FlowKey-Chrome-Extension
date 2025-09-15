@@ -81,9 +81,9 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark, currentTabInfo }) {
         </div>
 
         {/* Main Content - Fixed height to prevent overflow */}
-        <div className="flex-1 bg-white rounded-lg p-4 text-black relative overflow-hidden flex flex-col min-h-0">
+        <div className="flex-1 bg-[#e9e9e9] rounded-lg p-4 text-black relative overflow-hidden flex flex-col min-h-0">
           {/* Large bookmark icon at top */}
-          <div className="flex justify-center mb-4 flex-shrink-0">
+          <div className="flex justify-center flex-shrink-0 mt-5">
             <img 
               src="./assets/icons/book-mark.png" 
               alt="Empty Bookmarks" 
@@ -163,7 +163,7 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark, currentTabInfo }) {
               
               <button
                 onClick={onBack}
-                className="w-full bg-transparent text-gray-600 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm active:scale-95"
+                className="w-full text-center bg-transparent text-gray-600 font-medium px-4 text-sm active:scale-95"
               >
                 Cancel
               </button>

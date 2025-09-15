@@ -75,7 +75,7 @@ function BookmarkSavedPage({ onBackToBookmarks, bookmarkData }) {
                 </div>
                 
                 {/* Action Icons */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center min-w-fit">
                   <button className="p-1 hover:bg-gray-100 rounded">
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

@@ -18,16 +18,28 @@ import AddBookmarkPage from "./components/AddBookmarkPage.jsx";
 import BookmarkSavedPage from "./components/BookmarkSavedPage.jsx";
 
 function Popup() {
-  const [currentPage, setCurrentPage] = useState('welcome'); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
+  const [currentPage, setCurrentPage] = useState("bookmarks"); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
   const [bookmarks, setBookmarks] = useState([]);
   const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
   const [editingBookmark, setEditingBookmark] = useState(null); // For editing existing bookmarks
   const [currentTabInfo, setCurrentTabInfo] = useState(null); // For auto-filling current tab data
   const [loading, setLoading] = useState(false); // For loading states
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Load bookmarks from storage on component mount
   useEffect(() => {
     loadBookmarksFromStorage();
+
+    const checkLoginState = async () => {
+      const storedLoginState = await getFromStorage("walletAddress");
+      if (storedLoginState.walletAddress) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginState();
   }, []);
 
   const loadBookmarksFromStorage = async () => {
@@ -35,9 +47,9 @@ function Popup() {
       setLoading(true);
       const storedBookmarks = await getBookmarks();
       setBookmarks(storedBookmarks);
-      console.log('Loaded bookmarks from storage:', storedBookmarks);
+      console.log("Loaded bookmarks from storage:", storedBookmarks);
     } catch (error) {
-      console.error('Error loading bookmarks:', error);
+      console.error("Error loading bookmarks:", error);
     } finally {
       setLoading(false);
     }
@@ -51,82 +63,141 @@ function Popup() {
         return {
           title: tab.title,
           url: tab.url,
-          favIconUrl: tab.favIconUrl
+          favIconUrl: tab.favIconUrl,
         };
       }
       return null;
     } catch (error) {
-      console.error('Error getting tab info:', error);
+      console.error("Error getting tab info:", error);
       return null;
     }
   };
-  
-  const handlePhantomConnect = () => {
-    console.log("Connecting to Phantom wallet...");
-    // Simulate successful connection and navigate to bookmarks
-    setCurrentPage('bookmarks');
+
+  const handlePhantomConnect = async () => {
+    try {
+      setLoading(true);
+      console.log("Connecting to Phantom wallet via content script...");
+
+      // Get active tab
+      const tab = await getCurrentTab();
+      if (!tab || !tab.id) {
+        alert("No active tab found. Please open a webpage and try again.");
+        return;
+      }
+
+      // Ask content script to trigger Phantom connect through in-page script
+      const response = await new Promise((resolve) => {
+        try {
+          chrome.tabs.sendMessage(
+            tab.id,
+            { type: "FLOWKEY_CONNECT" },
+            (res) => {
+              // If the message channel failed, res may be undefined
+              resolve(res || {});
+            }
+          );
+        } catch (e) {
+          resolve({ error: e?.message || "SEND_MESSAGE_FAILED" });
+        }
+      });
+
+      if (response?.error) {
+        if (response.error === "PHANTOM_NOT_FOUND") {
+          if (confirm("Phantom wallet not found. Open install page?")) {
+            chrome.tabs.create({ url: "https://phantom.app/download" });
+          }
+        } else {
+          alert(`Failed to connect: ${response.error}`);
+        }
+        return;
+      }
+
+      const address = response?.address;
+      if (!address) {
+        alert("No address returned from Phantom.");
+        return;
+      }
+
+      // Save address to storage
+      await saveToStorage({
+        walletAddress: address,
+        walletProvider: "phantom",
+      });
+      console.log("Wallet connected:", address);
+      setIsLoggedIn(true)
+
+      // Navigate to bookmarks after successful connection
+      setCurrentPage("bookmarks");
+    } catch (error) {
+      console.error("Error during Phantom connect:", error);
+      alert("Error connecting to wallet. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBackToWelcome = () => {
-    setCurrentPage('welcome');
+    setCurrentPage("welcome");
   };
 
   const handleAddBookmark = () => {
     setEditingBookmark(null); // Clear editing state for new bookmark
     setCurrentTabInfo(null); // Clear tab info for manual entry
-    setCurrentPage('addBookmark');
+    setCurrentPage("addBookmark");
   };
 
   const handleAddCurrentTabBookmark = async () => {
     setEditingBookmark(null); // Clear editing state
     const tabInfo = await getCurrentTabInfo();
     setCurrentTabInfo(tabInfo);
-    setCurrentPage('addBookmark');
+    setCurrentPage("addBookmark");
   };
 
   const handleEditBookmark = (bookmark) => {
     setEditingBookmark(bookmark);
-    setCurrentPage('addBookmark');
+    setCurrentPage("addBookmark");
   };
 
   const handleBackToBookmarks = () => {
     setEditingBookmark(null); // Clear editing state
     setCurrentTabInfo(null); // Clear tab info
-    setCurrentPage('bookmarks');
+    setCurrentPage("bookmarks");
   };
 
   const handleSaveBookmark = async (bookmarkData) => {
     try {
       setLoading(true);
       let savedBookmark;
-      
+
       if (editingBookmark) {
         // Update existing bookmark using storageController
         savedBookmark = await updateBookmark(editingBookmark.id, bookmarkData);
         if (savedBookmark) {
-          setBookmarks(prev => prev.map(bookmark => 
-            bookmark.id === editingBookmark.id ? savedBookmark : bookmark
-          ));
+          setBookmarks((prev) =>
+            prev.map((bookmark) =>
+              bookmark.id === editingBookmark.id ? savedBookmark : bookmark
+            )
+          );
         }
         setEditingBookmark(null);
       } else {
         // Add new bookmark using storageController
         savedBookmark = await addBookmark(bookmarkData);
         if (savedBookmark) {
-          setBookmarks(prev => [...prev, savedBookmark]);
+          setBookmarks((prev) => [...prev, savedBookmark]);
         }
       }
-      
+
       if (savedBookmark) {
         setLastSavedBookmark(savedBookmark);
-        setCurrentPage('bookmarks'); // Navigate directly to bookmarks page
+        setCurrentPage("bookmarks"); // Navigate directly to bookmarks page
         console.log("Bookmark saved:", savedBookmark);
       } else {
-        alert('Failed to save bookmark. Please try again.');
+        alert("Failed to save bookmark. Please try again.");
       }
     } catch (error) {
-      console.error('Error saving bookmark:', error);
-      alert('Error saving bookmark. Please try again.');
+      console.error("Error saving bookmark:", error);
+      alert("Error saving bookmark. Please try again.");
     } finally {
       setLoading(false);
       setCurrentTabInfo(null); // Clear tab info after saving
@@ -138,14 +209,16 @@ function Popup() {
       setLoading(true);
       const success = await deleteBookmark(bookmarkId);
       if (success) {
-        setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
-        console.log('Bookmark deleted successfully');
+        setBookmarks((prev) =>
+          prev.filter((bookmark) => bookmark.id !== bookmarkId)
+        );
+        console.log("Bookmark deleted successfully");
       } else {
-        alert('Failed to delete bookmark. Please try again.');
+        alert("Failed to delete bookmark. Please try again.");
       }
     } catch (error) {
-      console.error('Error deleting bookmark:', error);
-      alert('Error deleting bookmark. Please try again.');
+      console.error("Error deleting bookmark:", error);
+      alert("Error deleting bookmark. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -156,15 +229,15 @@ function Popup() {
       const reorderedBookmarks = await reorderBookmarks(newBookmarks);
       if (reorderedBookmarks) {
         setBookmarks(reorderedBookmarks);
-        console.log('Bookmarks reordered successfully');
+        console.log("Bookmarks reordered successfully");
       }
     } catch (error) {
-      console.error('Error reordering bookmarks:', error);
+      console.error("Error reordering bookmarks:", error);
     }
   };
 
   const handleBackToBookmarksFromSaved = () => {
-    setCurrentPage('bookmarks');
+    setCurrentPage("bookmarks");
   };
 
   return (
@@ -177,33 +250,35 @@ function Popup() {
           </div>
         </div>
       )}
-      {currentPage === 'welcome' && (
-        <WelcomePage onConnect={handlePhantomConnect} />
-      )}
-      {currentPage === 'bookmarks' && (
-        <BookmarksPage 
-          onBack={handleBackToWelcome}
-          onAddBookmark={handleAddBookmark}
-          onAddCurrentTabBookmark={handleAddCurrentTabBookmark}
-          onEditBookmark={handleEditBookmark}
-          onDeleteBookmark={handleDeleteBookmark}
-          onReorderBookmarks={handleReorderBookmarks}
-          bookmarks={bookmarks}
-        />
-      )}
-      {currentPage === 'addBookmark' && (
-        <AddBookmarkPage 
-          onBack={handleBackToBookmarks}
-          onSave={handleSaveBookmark}
-          editingBookmark={editingBookmark}
-          currentTabInfo={currentTabInfo}
-        />
-      )}
-      {currentPage === 'bookmarkSaved' && (
-        <BookmarkSavedPage 
-          onBackToBookmarks={handleBackToBookmarksFromSaved}
-          bookmarkData={lastSavedBookmark}
-        />
+      {!isLoggedIn && <WelcomePage onConnect={handlePhantomConnect} />}
+      {isLoggedIn && (
+        <>
+          {currentPage === "bookmarks" && (
+            <BookmarksPage
+              onBack={handleBackToWelcome}
+              onAddBookmark={handleAddBookmark}
+              onAddCurrentTabBookmark={handleAddCurrentTabBookmark}
+              onEditBookmark={handleEditBookmark}
+              onDeleteBookmark={handleDeleteBookmark}
+              onReorderBookmarks={handleReorderBookmarks}
+              bookmarks={bookmarks}
+            />
+          )}
+          {currentPage === "addBookmark" && (
+            <AddBookmarkPage
+              onBack={handleBackToBookmarks}
+              onSave={handleSaveBookmark}
+              editingBookmark={editingBookmark}
+              currentTabInfo={currentTabInfo}
+            />
+          )}
+          {currentPage === "bookmarkSaved" && (
+            <BookmarkSavedPage
+              onBackToBookmarks={handleBackToBookmarksFromSaved}
+              bookmarkData={lastSavedBookmark}
+            />
+          )}
+        </>
       )}
     </>
   );
