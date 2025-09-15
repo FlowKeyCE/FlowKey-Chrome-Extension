@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   getCurrentWindowTabs,
   addLayout,
   getLayouts,
   deleteLayout,
   updateLayout,
   reorderLayouts,
-  restoreWindowLayout
-} from '../controllers/storageController';
+  restoreWindowLayout,
+} from "../controllers/storageController";
 
-function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditBookmark, onDeleteBookmark, onReorderBookmarks, bookmarks = [] }) {
+function BookmarksPage({
+  onBack,
+  onAddBookmark,
+  onAddCurrentTabBookmark,
+  onEditBookmark,
+  onDeleteBookmark,
+  onReorderBookmarks,
+  bookmarks = [],
+}) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookmarkToDelete, setBookmarkToDelete] = useState(null);
   const [draggedBookmark, setDraggedBookmark] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-  const [currentView, setCurrentView] = useState('bookmarks'); // 'bookmarks' or 'layouts'
+  const [currentView, setCurrentView] = useState("bookmarks"); // 'bookmarks' or 'layouts'
   const [layouts, setLayouts] = useState([]); // Store layouts data
   const [showLayoutDeleteConfirm, setShowLayoutDeleteConfirm] = useState(false);
   const [layoutToDelete, setLayoutToDelete] = useState(null);
   const [draggedLayout, setDraggedLayout] = useState(null);
   const [dragOverLayoutIndex, setDragOverLayoutIndex] = useState(null);
   const [editingLayoutId, setEditingLayoutId] = useState(null);
-  const [editingLayoutName, setEditingLayoutName] = useState('');
+  const [editingLayoutName, setEditingLayoutName] = useState("");
 
   // Load layouts from storage on component mount
   useEffect(() => {
@@ -31,7 +39,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
         const storedLayouts = await getLayouts();
         setLayouts(storedLayouts);
       } catch (error) {
-        console.error('Error loading layouts:', error);
+        console.error("Error loading layouts:", error);
       }
     };
 
@@ -40,9 +48,9 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
   const handleOpenAllBookmarks = () => {
     // Open all bookmarks in new tabs
-    bookmarks.forEach(bookmark => {
+    bookmarks.forEach((bookmark) => {
       if (bookmark.url) {
-        window.open(bookmark.url, '_blank');
+        window.open(bookmark.url, "_blank");
       }
     });
   };
@@ -63,9 +71,9 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
     try {
       // Use the storage controller to get tabs
       const tabsData = await getCurrentWindowTabs();
-      
+
       if (tabsData.length === 0) {
-        alert('No tabs found in the current window');
+        alert("No tabs found in the current window");
         return;
       }
 
@@ -73,47 +81,45 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
       const newLayoutData = {
         name: tabsData[0].title, // First tab's title as layout name
         tabs: tabsData,
-        tabCount: tabsData.length
+        tabCount: tabsData.length,
       };
 
       // Save to storage using the controller
       const savedLayout = await addLayout(newLayoutData);
-      
+
       if (savedLayout) {
         // Add to local state
-        setLayouts(prev => [...prev, savedLayout]);
-        console.log('Window layout saved:', savedLayout);
+        setLayouts((prev) => [...prev, savedLayout]);
+        console.log("Window layout saved:", savedLayout);
       } else {
-        alert('Failed to save window layout. Please try again.');
+        alert("Failed to save window layout. Please try again.");
       }
-      
     } catch (error) {
-      console.error('Error saving window layout:', error);
-      alert('Failed to save window layout. Please try again.');
+      console.error("Error saving window layout:", error);
+      alert("Failed to save window layout. Please try again.");
     }
   };
 
   const handleToggleToLayouts = () => {
-    setCurrentView('layouts');
+    setCurrentView("layouts");
   };
 
   const handleToggleToBookmarks = () => {
-    setCurrentView('bookmarks');
+    setCurrentView("bookmarks");
   };
 
   const handleRestoreLayout = async (layout) => {
     try {
       const success = await restoreWindowLayout(layout.tabs);
-      
+
       if (success) {
-        console.log('Window layout restored:', layout);
+        console.log("Window layout restored:", layout);
       } else {
-        alert('Failed to restore window layout. Please try again.');
+        alert("Failed to restore window layout. Please try again.");
       }
-      
     } catch (error) {
-      console.error('Error restoring window layout:', error);
-      alert('Failed to restore window layout. Please try again.');
+      console.error("Error restoring window layout:", error);
+      alert("Failed to restore window layout. Please try again.");
     }
   };
 
@@ -127,13 +133,15 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
       try {
         const success = await deleteLayout(layoutToDelete.id);
         if (success) {
-          setLayouts(prev => prev.filter(layout => layout.id !== layoutToDelete.id));
+          setLayouts((prev) =>
+            prev.filter((layout) => layout.id !== layoutToDelete.id)
+          );
         } else {
-          alert('Failed to delete layout. Please try again.');
+          alert("Failed to delete layout. Please try again.");
         }
       } catch (error) {
-        console.error('Error deleting layout:', error);
-        alert('Failed to delete layout. Please try again.');
+        console.error("Error deleting layout:", error);
+        alert("Failed to delete layout. Please try again.");
       }
     }
     setShowLayoutDeleteConfirm(false);
@@ -148,12 +156,12 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
   // Layout Drag and Drop handlers
   const handleLayoutDragStart = (e, layout, index) => {
     setDraggedLayout({ layout, index });
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleLayoutDragOver = (e, index) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
     setDragOverLayoutIndex(index);
   };
 
@@ -163,7 +171,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
   const handleLayoutDrop = async (e, dropIndex) => {
     e.preventDefault();
-    
+
     if (!draggedLayout || draggedLayout.index === dropIndex) {
       setDraggedLayout(null);
       setDragOverLayoutIndex(null);
@@ -172,22 +180,23 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
     const newLayouts = [...layouts];
     const draggedItem = newLayouts[draggedLayout.index];
-    
+
     // Remove the dragged item
     newLayouts.splice(draggedLayout.index, 1);
-    
+
     // Insert at new position
-    const insertIndex = dropIndex > draggedLayout.index ? dropIndex - 1 : dropIndex;
+    const insertIndex =
+      dropIndex > draggedLayout.index ? dropIndex - 1 : dropIndex;
     newLayouts.splice(insertIndex, 0, draggedItem);
-    
+
     // Update storage with new order
     try {
       await reorderLayouts(newLayouts);
       setLayouts(newLayouts);
     } catch (error) {
-      console.error('Error reordering layouts:', error);
+      console.error("Error reordering layouts:", error);
     }
-    
+
     setDraggedLayout(null);
     setDragOverLayoutIndex(null);
   };
@@ -205,33 +214,37 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
   const handleSaveLayoutName = async (layoutId) => {
     if (editingLayoutName.trim()) {
       try {
-        const success = await updateLayout(layoutId, { name: editingLayoutName.trim() });
+        const success = await updateLayout(layoutId, {
+          name: editingLayoutName.trim(),
+        });
         if (success) {
-          setLayouts(prev => prev.map(layout => 
-            layout.id === layoutId 
-              ? { ...layout, name: editingLayoutName.trim() }
-              : layout
-          ));
+          setLayouts((prev) =>
+            prev.map((layout) =>
+              layout.id === layoutId
+                ? { ...layout, name: editingLayoutName.trim() }
+                : layout
+            )
+          );
         } else {
-          alert('Failed to update layout name. Please try again.');
+          alert("Failed to update layout name. Please try again.");
         }
       } catch (error) {
-        console.error('Error updating layout name:', error);
-        alert('Failed to update layout name. Please try again.');
+        console.error("Error updating layout name:", error);
+        alert("Failed to update layout name. Please try again.");
       }
     }
     setEditingLayoutId(null);
-    setEditingLayoutName('');
+    setEditingLayoutName("");
   };
 
   const handleCancelEditLayoutName = () => {
     setEditingLayoutId(null);
-    setEditingLayoutName('');
+    setEditingLayoutName("");
   };
 
   const handleOpenBookmark = (url) => {
     if (url) {
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
   };
 
@@ -262,12 +275,12 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
   // Drag and Drop handlers
   const handleDragStart = (e, bookmark, index) => {
     setDraggedBookmark({ bookmark, index });
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
     setDragOverIndex(index);
   };
 
@@ -277,7 +290,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
   const handleDrop = (e, dropIndex) => {
     e.preventDefault();
-    
+
     if (!draggedBookmark || draggedBookmark.index === dropIndex) {
       setDraggedBookmark(null);
       setDragOverIndex(null);
@@ -286,18 +299,19 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
     const newBookmarks = [...bookmarks];
     const draggedItem = newBookmarks[draggedBookmark.index];
-    
+
     // Remove the dragged item
     newBookmarks.splice(draggedBookmark.index, 1);
-    
+
     // Insert at new position
-    const insertIndex = dropIndex > draggedBookmark.index ? dropIndex - 1 : dropIndex;
+    const insertIndex =
+      dropIndex > draggedBookmark.index ? dropIndex - 1 : dropIndex;
     newBookmarks.splice(insertIndex, 0, draggedItem);
-    
+
     if (onReorderBookmarks) {
       onReorderBookmarks(newBookmarks);
     }
-    
+
     setDraggedBookmark(null);
     setDragOverIndex(null);
   };
@@ -309,31 +323,34 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
 
   const getBookmarkIconPath = (iconType) => {
     switch (iconType) {
-      case 'link':
-        return './assets/icons/Internet-white.png';
-      case 'discord':
-        return './assets/icons/Discord New-white.png';
-      case 'telegram':
-        return './assets/icons/Telegram App-white.png';
-      case 'twitter':
-        return './assets/icons/X-white.png';
+      case "link":
+        return "./assets/icons/Internet-white.png";
+      case "discord":
+        return "./assets/icons/Discord New-white.png";
+      case "telegram":
+        return "./assets/icons/Telegram App-white.png";
+      case "twitter":
+        return "./assets/icons/X-white.png";
       default:
-        return './assets/icons/Internet-white.png';
+        return "./assets/icons/Internet-white.png";
     }
   };
 
   const handleLinkClick = () => {
-    window.open('https://flowkey-two.vercel.app/', '_blank');
+    window.open("https://flowkey-two.vercel.app/", "_blank");
   };
 
   const handleFileClick = () => {
     // Replace with actual FlowKey documentation URL
-    window.open('https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+    window.open(
+      "https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md",
+      "_blank"
+    );
   };
 
   const handleTwitterClick = () => {
     // Replace with actual FlowKey Twitter URL
-    window.open('https://twitter.com/flowkey', '_blank');
+    window.open("https://twitter.com/flowkey", "_blank");
   };
 
   return (
@@ -344,80 +361,121 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
       {/* Solid color overlay */}
-      <div className="absolute inset-0" style={{ backgroundColor: '#111728' }}></div>
-      
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: "#111728" }}
+      ></div>
+
       <div className="relative z-10 flex flex-col h-full">
         {/* Header with Logo */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <img 
-              src="./assets/icons/flowkey_logo-removebg.png" 
-              alt="FlowKey Logo" 
+            <img
+              src="./assets/icons/flowkey_logo-removebg.png"
+              alt="FlowKey Logo"
               className="w-12 h-12 object-contain"
             />
           </div>
         </div>
-
         {/* Action Buttons */}
         <div className="space-y-3 mb-6">
-          <motion.button 
+          <motion.button
             onClick={handleOpenAllBookmarks}
             className="w-full bg-white text-black font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-100 transition-colors"
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
             <span>Open All Bookmarks</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
             </svg>
           </motion.button>
 
-          <motion.button 
+          <motion.button
             onClick={handleAddToBookmarks}
             className="w-full text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
-            style={{ backgroundColor: '#6E4EFF' }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#5A3FE6'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#6E4EFF'}
+            style={{ backgroundColor: "#6E4EFF" }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#5A3FE6")}
+            onMouseLeave={(e) => (e.target.style.backgroundColor = "#6E4EFF")}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
             <span>Add to bookmarks</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+              />
             </svg>
           </motion.button>
         </div>
-
         {/* Main Content Section */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Section Header with Toggle */}
-          <div className="flex items-center mb-4 flex-shrink-0">
-            
-            {currentView === 'bookmarks' ? (
-              <button 
-                onClick={handleToggleToLayouts}
-                className="flex items-center hover:text-purple-400 transition-colors"
-              >
-                <h2 className="text-xl font-semibold">Bookmarks ({bookmarks.length})</h2>
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            ) : (
-              <button 
+          <div className="flex items-center mb-4 flex-shrink-0 justify-center">
+            <div className="relative inline-flex rounded-lg bg-white/5 border border-white/10 p-1">
+              <button
                 onClick={handleToggleToBookmarks}
-                className="flex items-center hover:text-purple-400 transition-colors"
+                className={`relative px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+                  currentView === "bookmarks"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
               >
-                <h2 className="text-xl font-semibold">Layouts ({layouts.length})</h2>
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-                </svg>
+                <span className="relative z-10">
+                  Bookmarks ({bookmarks.length})
+                </span>
+                {currentView === "bookmarks" && (
+                  <motion.span
+                    layoutId="flowkey-tab-indicator"
+                    className="absolute inset-0 rounded-md"
+                    style={{ backgroundColor: "#6E4EFF" }}
+                    transition={{ type: "spring", stiffness: 450, damping: 36 }}
+                  />
+                )}
               </button>
-            )}
+              <button
+                onClick={handleToggleToLayouts}
+                className={`relative px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+                  currentView === "layouts"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                <span className="relative z-10">
+                  Layouts ({layouts.length})
+                </span>
+                {currentView === "layouts" && (
+                  <motion.span
+                    layoutId="flowkey-tab-indicator"
+                    className="absolute inset-0 rounded-md"
+                    style={{ backgroundColor: "#6E4EFF" }}
+                    transition={{ type: "spring", stiffness: 450, damping: 36 }}
+                  />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Bookmarks View */}
-          {currentView === 'bookmarks' && (
+          {currentView === "bookmarks" && (
             <>
               {/* Bookmarks List or Empty State */}
               {bookmarks.length > 0 ? (
@@ -426,7 +484,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                   <div className="flex-1 space-y-3 overflow-y-auto min-h-0 scrollbar-hide">
                     <AnimatePresence initial={false}>
                       {bookmarks.map((bookmark, index) => (
-                        <motion.div 
+                        <motion.div
                           key={bookmark.id}
                           layout
                           initial={{ opacity: 0, y: 8 }}
@@ -434,120 +492,171 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.2 }}
                           className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
-                          dragOverIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
-                        } ${draggedBookmark?.index === index ? 'opacity-50' : ''}`}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, bookmark, index)}
-                        onDragOver={(e) => handleDragOver(e, index)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, index)}
-                        onDragEnd={handleDragEnd}
+                            dragOverIndex === index
+                              ? "bg-purple-600/20 border-2 border-purple-500"
+                              : ""
+                          } ${
+                            draggedBookmark?.index === index ? "opacity-50" : ""
+                          }`}
+                          draggable
+                          onDragStart={(e) =>
+                            handleDragStart(e, bookmark, index)
+                          }
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onDragEnd={handleDragEnd}
                           whileHover={{ y: -2 }}
-                      >
-                        {/* Left side - Drag handle, Icon, Name */}
-                        <div className="flex items-center space-x-3">
-                          {/* Drag Handle */}
-                          <div className="cursor-move hover:text-white">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
-                            </svg>
+                        >
+                          {/* Left side - Drag handle, Icon, Name */}
+                          <div className="flex items-center space-x-3">
+                            {/* Drag Handle */}
+                            <div className="cursor-move hover:text-white">
+                              <svg
+                                className="w-4 h-4 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M4 8h16M4 16h16"
+                                />
+                              </svg>
+                            </div>
+
+                            {/* Record Indicator */}
+                            <div className="w-2 h-2 min-w-2 min-h-2 bg-red-500 rounded-full"></div>
+
+                            {/* Bookmark Icon */}
+                            <div
+                              className="w-8 h-8 min-w-8 min-h-8 rounded flex items-center justify-center"
+                              style={{ backgroundColor: "#6F4FFF" }}
+                            >
+                              <img
+                                src={getBookmarkIconPath(bookmark.icon)}
+                                alt={bookmark.icon}
+                                className="w-5 h-5 min-w-5 min-h-5 object-contain"
+                              />
+                            </div>
+
+                            {/* Bookmark Name */}
+                            <span className="text-white font-medium">
+                              {bookmark.name}
+                            </span>
                           </div>
-                          
-                          {/* Record Indicator */}
-                          <div className="w-2 h-2 min-w-2 min-h-2 bg-red-500 rounded-full"></div>
-                          
-                          {/* Bookmark Icon */}
-                          <div 
-                            className="w-8 h-8 min-w-8 min-h-8 rounded flex items-center justify-center"
-                            style={{ backgroundColor: '#6F4FFF' }}
-                          >
-                            <img 
-                              src={getBookmarkIconPath(bookmark.icon)}
-                              alt={bookmark.icon}
-                              className="w-5 h-5 min-w-5 min-h-5 object-contain"
-                            />
+
+                          {/* Right side - Action buttons */}
+                          <div className="flex items-center min-w-fit">
+                            {/* Open in new tab */}
+                            <motion.button
+                              onClick={() => handleOpenBookmark(bookmark.url)}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Open bookmark"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
+                            </motion.button>
+
+                            {/* Edit bookmark */}
+                            <motion.button
+                              onClick={() => handleEditBookmark(bookmark)}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Edit bookmark"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
+                              </svg>
+                            </motion.button>
+
+                            {/* Delete bookmark */}
+                            <motion.button
+                              onClick={() => handleDeleteClick(bookmark)}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Delete bookmark"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-red-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </motion.button>
                           </div>
-                          
-                          {/* Bookmark Name */}
-                          <span className="text-white font-medium">{bookmark.name}</span>
-                        </div>
-                        
-                        {/* Right side - Action buttons */}
-                        <div className="flex items-center min-w-fit">
-                          {/* Open in new tab */}
-                          <motion.button 
-                            onClick={() => handleOpenBookmark(bookmark.url)}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Open bookmark"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </motion.button>
-                          
-                          {/* Edit bookmark */}
-                          <motion.button 
-                            onClick={() => handleEditBookmark(bookmark)}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Edit bookmark"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </motion.button>
-                          
-                          {/* Delete bookmark */}
-                          <motion.button 
-                            onClick={() => handleDeleteClick(bookmark)}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Delete bookmark"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 min-w-4 min-h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </motion.button>
-                        </div>
                         </motion.div>
                       ))}
                     </AnimatePresence>
                   </div>
-                  
+
                   {/* Add Website Button - Always visible */}
                   <div className="flex-shrink-0 mt-4">
-                    <motion.button 
+                    <motion.button
                       onClick={handleAddWebsite}
                       className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className="text-2xl text-gray-400">+</span>
-                      <span className="text-gray-400">Add a website to bookmarks</span>
+                      <span className="text-gray-400">
+                        Add a website to bookmarks
+                      </span>
                     </motion.button>
                   </div>
                 </div>
               ) : (
                 /* Bookmarks Empty State */
-                <motion.div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
+                <motion.div
+                  className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
                 >
                   <div className="flex justify-center">
-                    <img 
-                      src="./assets/icons/book-mark.png" 
-                      alt="Empty Bookmarks" 
+                    <img
+                      src="./assets/icons/book-mark.png"
+                      alt="Empty Bookmarks"
                       className="opacity-50 max-w-full h-auto"
-                      style={{ maxHeight: '120px' }}
+                      style={{ maxHeight: "120px" }}
                     />
                   </div>
                   <p className="text-center text-sm opacity-80 max-w-sm">
                     Looks empty...add your first bookmark
                   </p>
-                  
-                  <motion.button 
+
+                  <motion.button
                     onClick={handleAddWebsite}
                     className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
                     whileHover={{ y: -2 }}
@@ -562,7 +671,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
           )}
 
           {/* Layouts View */}
-          {currentView === 'layouts' && (
+          {currentView === "layouts" && (
             <>
               {/* Layouts List or Empty State */}
               {layouts.length > 0 ? (
@@ -571,7 +680,7 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                   <div className="flex-1 space-y-3 overflow-y-auto min-h-0 scrollbar-hide">
                     <AnimatePresence initial={false}>
                       {layouts.map((layout, index) => (
-                        <motion.div 
+                        <motion.div
                           key={layout.id}
                           layout
                           initial={{ opacity: 0, y: 8 }}
@@ -579,147 +688,202 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.2 }}
                           className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
-                          dragOverLayoutIndex === index ? 'bg-purple-600/20 border-2 border-purple-500' : ''
-                        } ${draggedLayout?.index === index ? 'opacity-50' : ''}`}
-                        draggable
-                        onDragStart={(e) => handleLayoutDragStart(e, layout, index)}
-                        onDragOver={(e) => handleLayoutDragOver(e, index)}
-                        onDragLeave={handleLayoutDragLeave}
-                        onDrop={(e) => handleLayoutDrop(e, index)}
-                        onDragEnd={handleLayoutDragEnd}
+                            dragOverLayoutIndex === index
+                              ? "bg-purple-600/20 border-2 border-purple-500"
+                              : ""
+                          } ${
+                            draggedLayout?.index === index ? "opacity-50" : ""
+                          }`}
+                          draggable
+                          onDragStart={(e) =>
+                            handleLayoutDragStart(e, layout, index)
+                          }
+                          onDragOver={(e) => handleLayoutDragOver(e, index)}
+                          onDragLeave={handleLayoutDragLeave}
+                          onDrop={(e) => handleLayoutDrop(e, index)}
+                          onDragEnd={handleLayoutDragEnd}
                           whileHover={{ y: -2 }}
-                      >
-                        {/* Left side - Drag handle, Icon, Name */}
-                        <div className="flex items-center space-x-3">
-                          {/* Drag Handle */}
-                          <div className="cursor-move hover:text-white">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
-                            </svg>
-                          </div>
-                          
-                          {/* Green Record Indicator for saved layouts */}
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          
-                          {/* Layout Icon - Restore Window */}
-                          <div 
-                            className="w-8 h-8 rounded flex items-center justify-center"
-                            style={{ backgroundColor: '#6F4FFF' }}
-                          >
-                            <img 
-                              src="./assets/icons/Restore Window.png" 
-                              alt="Layout" 
-                              className="w-5 h-5 object-contain"
-                            />
-                          </div>
-                          
-                          {/* Layout Name - First tab title */}
-                          <div className="flex flex-col">
-                            {editingLayoutId === layout.id ? (
-                              <div className="flex items-center space-x-2">
-                                <input
-                                  type="text"
-                                  value={editingLayoutName}
-                                  onChange={(e) => setEditingLayoutName(e.target.value)}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleSaveLayoutName(layout.id);
-                                    } else if (e.key === 'Escape') {
-                                      handleCancelEditLayoutName();
-                                    }
-                                  }}
-                                  onBlur={() => handleSaveLayoutName(layout.id)}
-                                  className="bg-gray-700 text-white text-sm px-2 py-1 rounded border-none outline-none focus:ring-1 focus:ring-purple-500 max-w-[120px]"
-                                  autoFocus
+                        >
+                          {/* Left side - Drag handle, Icon, Name */}
+                          <div className="flex items-center space-x-3">
+                            {/* Drag Handle */}
+                            <div className="cursor-move hover:text-white">
+                              <svg
+                                className="w-4 h-4 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M4 8h16M4 16h16"
                                 />
-                              </div>
-                            ) : (
-                              <span className="text-white font-medium truncate max-w-[150px]">{layout.name}</span>
-                            )}
-                            <span className="text-gray-400 text-xs">{layout.tabCount} tabs</span>
-                          </div>
-                        </div>
-                        
-                        {/* Right side - Action buttons */}
-                        <div className="flex items-center space-x-2">
-                          {/* Open Window - Opens all tabs from layout */}
-                          <motion.button 
-                            onClick={() => {
-                              layout.tabs.forEach(tab => {
-                                window.open(tab.url, '_blank');
-                              });
-                            }}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Open all tabs in new window"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </motion.button>
+                              </svg>
+                            </div>
 
-                          {/* Edit Layout Name */}
-                          <motion.button 
-                            onClick={() => handleEditLayoutName(layout)}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Edit layout name"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </motion.button>
-                          
-                          {/* Delete Layout */}
-                          <motion.button 
-                            onClick={() => handleDeleteLayoutClick(layout)}
-                            className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                            title="Delete layout"
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <svg className="w-4 h-4 text-gray-300 hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </motion.button>
-                        </div>
+                            {/* Green Record Indicator for saved layouts */}
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+
+                            {/* Layout Icon - Restore Window */}
+                            <div
+                              className="w-8 h-8 rounded flex items-center justify-center"
+                              style={{ backgroundColor: "#6F4FFF" }}
+                            >
+                              <img
+                                src="./assets/icons/Restore Window.png"
+                                alt="Layout"
+                                className="w-5 h-5 object-contain"
+                              />
+                            </div>
+
+                            {/* Layout Name - First tab title */}
+                            <div className="flex flex-col">
+                              {editingLayoutId === layout.id ? (
+                                <div className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={editingLayoutName}
+                                    onChange={(e) =>
+                                      setEditingLayoutName(e.target.value)
+                                    }
+                                    onKeyPress={(e) => {
+                                      if (e.key === "Enter") {
+                                        handleSaveLayoutName(layout.id);
+                                      } else if (e.key === "Escape") {
+                                        handleCancelEditLayoutName();
+                                      }
+                                    }}
+                                    onBlur={() =>
+                                      handleSaveLayoutName(layout.id)
+                                    }
+                                    className="bg-gray-700 text-white text-sm px-2 py-1 rounded border-none outline-none focus:ring-1 focus:ring-purple-500 max-w-[120px]"
+                                    autoFocus
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-white font-medium truncate max-w-[150px]">
+                                  {layout.name}
+                                </span>
+                              )}
+                              <span className="text-gray-400 text-xs">
+                                {layout.tabCount} tabs
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Right side - Action buttons */}
+                          <div className="flex items-center space-x-2">
+                            {/* Open Window - Opens all tabs from layout */}
+                            <motion.button
+                              onClick={() => {
+                                chrome.runtime.sendMessage({command: 'OPEN_TABS', tabs: layout.tabs})
+                              }}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Open all tabs in new window"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 text-gray-300 hover:text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
+                            </motion.button>
+
+                            {/* Edit Layout Name */}
+                            <motion.button
+                              onClick={() => handleEditLayoutName(layout)}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Edit layout name"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 text-gray-300 hover:text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
+                              </svg>
+                            </motion.button>
+
+                            {/* Delete Layout */}
+                            <motion.button
+                              onClick={() => handleDeleteLayoutClick(layout)}
+                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                              title="Delete layout"
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <svg
+                                className="w-4 h-4 text-gray-300 hover:text-red-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </motion.button>
+                          </div>
                         </motion.div>
                       ))}
                     </AnimatePresence>
                   </div>
-                  
+
                   {/* Add Layout Button */}
                   <div className="flex-shrink-0 mt-4">
-                    <motion.button 
+                    <motion.button
                       onClick={handleAddLayout}
                       className="w-full py-3 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center space-x-2 hover:border-gray-500 hover:bg-gray-800/30 transition-colors"
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className="text-2xl text-gray-400">+</span>
-                      <span className="text-gray-400">Add a window to layouts</span>
+                      <span className="text-gray-400">
+                        Add a window to layouts
+                      </span>
                     </motion.button>
                   </div>
                 </div>
               ) : (
                 /* Layouts Empty State */
-                <motion.div className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
+                <motion.div
+                  className="flex-1 flex flex-col items-center justify-center space-y-6 px-4"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
                 >
                   <div className="flex justify-center">
-                    <img 
-                      src="./assets/icons/Squared Menu.png" 
-                      alt="Empty Layouts" 
+                    <img
+                      src="./assets/icons/Squared Menu.png"
+                      alt="Empty Layouts"
                       className="opacity-50 max-w-full h-auto"
-                      style={{ maxHeight: '120px' }}
+                      style={{ maxHeight: "120px" }}
                     />
                   </div>
                   <p className="text-center text-sm opacity-80 max-w-sm">
                     Looks empty...add your first layout
                   </p>
-                  
-                  <motion.button 
+
+                  <motion.button
                     onClick={handleAddLayout}
                     className="bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
                     whileHover={{ y: -2 }}
@@ -732,14 +896,17 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
               )}
             </>
           )}
-        </div>        {/* Delete Confirmation Modal */}
+        </div>{" "}
+        {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <motion.div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
+          <motion.div
+            className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
+            <motion.div
+              className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
               initial={{ scale: 0.95, y: 6, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: -6, opacity: 0 }}
@@ -747,14 +914,30 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
             >
               <div className="text-center">
                 <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-red-100 mb-3">
-                  <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                  <svg
+                    className="h-5 w-5 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-2">Delete Bookmark</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Delete Bookmark
+                </h3>
                 <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-                  Are you sure you want to delete<br/>
-                  <span className="font-medium">"{bookmarkToDelete?.name}"</span>?<br/>
+                  Are you sure you want to delete
+                  <br />
+                  <span className="font-medium">
+                    "{bookmarkToDelete?.name}"
+                  </span>
+                  ?<br />
                   This action cannot be undone.
                 </p>
                 <div className="flex space-x-2">
@@ -777,15 +960,16 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
             </motion.div>
           </motion.div>
         )}
-
         {/* Layout Delete Confirmation Modal */}
         {showLayoutDeleteConfirm && (
-          <motion.div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
+          <motion.div
+            className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 rounded-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
+            <motion.div
+              className="bg-white rounded-lg p-4 mx-4 max-w-xs w-full shadow-xl"
               initial={{ scale: 0.95, y: 6, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: -6, opacity: 0 }}
@@ -793,14 +977,28 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
             >
               <div className="text-center">
                 <div className="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-red-100 mb-3">
-                  <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                  <svg
+                    className="h-5 w-5 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-2">Delete Layout</h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">
+                  Delete Layout
+                </h3>
                 <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-                  Are you sure you want to delete<br/>
-                  <span className="font-medium">"{layoutToDelete?.name}"</span>?<br/>
+                  Are you sure you want to delete
+                  <br />
+                  <span className="font-medium">"{layoutToDelete?.name}"</span>?
+                  <br />
                   This will remove {layoutToDelete?.tabCount} saved tabs.
                 </p>
                 <div className="flex space-x-2">
@@ -823,39 +1021,38 @@ function BookmarksPage({ onBack, onAddBookmark, onAddCurrentTabBookmark, onEditB
             </motion.div>
           </motion.div>
         )}
-
         {/* Bottom Navigation */}
         <div className="flex justify-center space-x-8 mt-6 pt-4 border-t border-purple-600/30">
-          <motion.button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+          <motion.button
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95"
             onClick={handleLinkClick}
             whileTap={{ scale: 0.95 }}
           >
-            <img 
-              src="./assets/icons/link.png" 
-              alt="Link" 
+            <img
+              src="./assets/icons/link.png"
+              alt="Link"
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </motion.button>
-          <motion.button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+          <motion.button
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95"
             onClick={handleFileClick}
             whileTap={{ scale: 0.95 }}
           >
-            <img 
-              src="./assets/icons/file.png" 
-              alt="File" 
+            <img
+              src="./assets/icons/file.png"
+              alt="File"
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </motion.button>
-          <motion.button 
-            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95" 
+          <motion.button
+            className="p-2 rounded-lg transition-all duration-300 hover:bg-purple-600/20 hover:scale-110 active:scale-95"
             onClick={handleTwitterClick}
             whileTap={{ scale: 0.95 }}
           >
-            <img 
-              src="./assets/icons/twitter.png" 
-              alt="Twitter" 
+            <img
+              src="./assets/icons/twitter.png"
+              alt="Twitter"
               className="w-6 h-6 transition-all duration-300 hover:brightness-125"
             />
           </motion.button>
