@@ -363,7 +363,7 @@ function BookmarksPage({
 
   const handleTwitterClick = () => {
     // Replace with actual FlowKey Twitter URL
-    window.open("https://twitter.com/flowkey", "_blank");
+    window.open("https://x.com/flowkeydotsh", "_blank");
   };
 
   return (

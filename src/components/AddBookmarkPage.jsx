@@ -60,7 +60,7 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark, currentTabInfo }) {
   };
 
   const handleTwitterClick = () => {
-    window.open('https://twitter.com/flowkey', '_blank');
+    window.open('https://x.com/flowkeydotsh', '_blank');
   };
 
   return (
