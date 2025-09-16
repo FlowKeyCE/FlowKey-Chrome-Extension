@@ -78,27 +78,12 @@ function Popup() {
       setLoading(true);
       console.log("Connecting to Phantom wallet via content script...");
 
-      // Get active tab
-      const tab = await getCurrentTab();
-      if (!tab || !tab.id) {
-        alert("No active tab found. Please open a webpage and try again.");
-        return;
-      }
-
-      // Ask content script to trigger Phantom connect through in-page script
+      // Ask background to open the dedicated connect tab and orchestrate load
       const response = await new Promise((resolve) => {
-        try {
-          chrome.tabs.sendMessage(
-            tab.id,
-            { type: "FLOWKEY_CONNECT" },
-            (res) => {
-              // If the message channel failed, res may be undefined
-              resolve(res || {});
-            }
-          );
-        } catch (e) {
-          resolve({ error: e?.message || "SEND_MESSAGE_FAILED" });
-        }
+        chrome.runtime.sendMessage(
+          { type: "FLOWKEY_OPEN_CONNECT_TAB", url: "https://flowkey-two.vercel.app/extension" },
+          (res) => resolve(res || {})
+        );
       });
 
       if (response?.error) {
@@ -117,6 +102,14 @@ function Popup() {
         alert("No address returned from Phantom.");
         return;
       }
+
+      // Save address directly via chrome.storage.local if present
+      if (response?.address) {
+        try {
+          await new Promise((resolve) => chrome.storage?.local?.set?.({ walletAddress: response.address }, resolve));
+        } catch (_) {}
+      }
+      // Background owns the lifecycle of the helper tab; nothing to close here
 
       // Save address to storage
       await saveToStorage({

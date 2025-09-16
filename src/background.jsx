@@ -30,4 +30,52 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse && sendResponse({ ok: false, error: e?.message || "UNKNOWN_ERROR" });
     }
   }
+
+  if (message.type === "FLOWKEY_OPEN_CONNECT_TAB") {
+    try {
+      const targetUrl = message.url || "https://flowkey-two.vercel.app/extension";
+      chrome.tabs.create({ url: targetUrl, active: true }, (tab) => {
+        if (!tab || !tab.id) {
+          sendResponse && sendResponse({ error: "TAB_CREATE_FAILED" });
+          return;
+        }
+
+        const tabId = tab.id;
+        const onUpdated = (updatedTabId, info) => {
+          if (updatedTabId === tabId && info.status === "complete") {
+            chrome.tabs.onUpdated.removeListener(onUpdated);
+
+            // Ask the content script in that tab to open the Phantom connect overlay
+            chrome.tabs.sendMessage(tabId, { type: "FLOWKEY_CONNECT" }, (res) => {
+              const lastErr = chrome.runtime.lastError;
+              if (lastErr) {
+                sendResponse && sendResponse({ error: lastErr.message || "NO_CONTENT_SCRIPT" });
+                return;
+              }
+              // Persist address from content/inpage directly in the service worker
+              const address = res && res.address;
+              if (address) {
+                try {
+                  chrome.storage.local.set({ walletAddress: address }, () => {
+                    // Notify any listeners (if popup is open somewhere)
+                    chrome.runtime.sendMessage({ type: 'FLOWKEY_WALLET_CONNECTED', address });
+                    // Open the extension's default popup (toolbar popup)
+                    try {
+                      chrome.action.openPopup(() => void 0);
+                    } catch (_) {}
+                  });
+                } catch (_) {}
+              }
+              // Pass through result in case a sender is still listening
+              sendResponse && sendResponse(res || {});
+            });
+          }
+        };
+        chrome.tabs.onUpdated.addListener(onUpdated);
+      });
+      return true; // keep channel open for async sendResponse
+    } catch (e) {
+      sendResponse && sendResponse({ error: e?.message || "UNKNOWN_ERROR" });
+    }
+  }
 });

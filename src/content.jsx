@@ -10,20 +10,37 @@ import { initPopup } from "./shadowRoot";
 // Inject in-page script to access window.solana (content scripts are isolated)
 const injectInpageScript = () => {
   try {
+    console.log("INPAGE ==> ")
+    const container = document.documentElement || document.head;
+    if (!container) return;
+
+    // Avoid duplicate injection
+    if (document.getElementById("flowkey-inpage-script")) return;
+
     const script = document.createElement("script");
+    script.id = "flowkey-inpage-script";
+    script.type = "text/javascript";
     script.src = chrome.runtime.getURL("inpage.js");
     script.async = false;
-    (document.head || document.documentElement).appendChild(script);
-    script.onload = () => {
-      script.parentNode && script.parentNode.removeChild(script);
-    };
+    container.appendChild(script);
+
+    script.addEventListener("load", () => {
+      // keep script node to avoid re-inject loops; no removal
+      window.postMessage({ type: "FLOWKEY_INPAGE_READY", target: "FLOWKEY_EXTENSION" }, "*");
+    });
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error("FlowKey: failed to inject inpage script", e);
   }
 };
 
-injectInpageScript();
+// Wait for DOM readiness before injection (some pages have a null head early)
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  console.log("READYYYYYY")
+  injectInpageScript();
+} else {
+  window.addEventListener("DOMContentLoaded", injectInpageScript, { once: true });
+}
 
 // Maintain pending connect requests keyed by requestId
 const pendingConnectResponses = new Map();
@@ -48,6 +65,13 @@ window.addEventListener("message", (event) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || !message.type) return;
 
+  if (message.type === "FLOWKEY_PING") {
+    try {
+      sendResponse({ ok: true });
+    } catch (_) {}
+    return; // no async work
+  }
+
   if (message.type === "FLOWKEY_CONNECT") {
     const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     // Store resolver to reply asynchronously
@@ -59,9 +83,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     });
 
-    // First open an in-page UI which lets the user click to connect.
+    // Directly ask in-page to initiate Phantom connect
     window.postMessage(
-      { type: "FLOWKEY_OPEN_CONNECT_UI", target: "FLOWKEY_INPAGE", requestId },
+      { type: "FLOWKEY_PHANTOM_CONNECT", target: "FLOWKEY_INPAGE", requestId },
       "*"
     );
 

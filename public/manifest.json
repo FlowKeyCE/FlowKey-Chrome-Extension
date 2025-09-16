@@ -26,7 +26,7 @@
     "64": "./assets/icons/64.png",
     "128": "./assets/icons/128.png"
   },
-  "permissions": ["storage", "bookmarks", "tabs", "activeTab"],
+  "permissions": ["storage", "bookmarks", "tabs", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {
