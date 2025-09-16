@@ -31,6 +31,7 @@ function BookmarksPage({
   const [dragOverLayoutIndex, setDragOverLayoutIndex] = useState(null);
   const [editingLayoutId, setEditingLayoutId] = useState(null);
   const [editingLayoutName, setEditingLayoutName] = useState("");
+  const [expandedLayouts, setExpandedLayouts] = useState(new Set()); // Track which layouts are expanded
 
   // Load layouts from storage on component mount
   useEffect(() => {
@@ -240,6 +241,18 @@ function BookmarksPage({
   const handleCancelEditLayoutName = () => {
     setEditingLayoutId(null);
     setEditingLayoutName("");
+  };
+
+  const toggleLayoutExpansion = (layoutId) => {
+    setExpandedLayouts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(layoutId)) {
+        newSet.delete(layoutId);
+      } else {
+        newSet.add(layoutId);
+      }
+      return newSet;
+    });
   };
 
   const handleOpenBookmark = (url) => {
@@ -687,7 +700,7 @@ function BookmarksPage({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.2 }}
-                          className={`bg-gray-800/50 rounded-lg p-3 flex items-center justify-between transition-all duration-200 ${
+                          className={`bg-gray-800/50 rounded-lg transition-all duration-200 ${
                             dragOverLayoutIndex === index
                               ? "bg-purple-600/20 border-2 border-purple-500"
                               : ""
@@ -704,145 +717,250 @@ function BookmarksPage({
                           onDragEnd={handleLayoutDragEnd}
                           whileHover={{ y: -2 }}
                         >
-                          {/* Left side - Drag handle, Icon, Name */}
-                          <div className="flex items-center space-x-3">
-                            {/* Drag Handle */}
-                            <div className="cursor-move hover:text-white">
-                              <svg
-                                className="w-4 h-4 text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M4 8h16M4 16h16"
-                                />
-                              </svg>
-                            </div>
-
-                            {/* Green Record Indicator for saved layouts */}
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-
-                            {/* Layout Icon - Restore Window */}
-                            <div
-                              className="w-8 h-8 rounded flex items-center justify-center"
-                              style={{ backgroundColor: "#6F4FFF" }}
-                            >
-                              <img
-                                src="./assets/icons/Restore Window.png"
-                                alt="Layout"
-                                className="w-5 h-5 object-contain"
-                              />
-                            </div>
-
-                            {/* Layout Name - First tab title */}
-                            <div className="flex flex-col">
-                              {editingLayoutId === layout.id ? (
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="text"
-                                    value={editingLayoutName}
-                                    onChange={(e) =>
-                                      setEditingLayoutName(e.target.value)
-                                    }
-                                    onKeyPress={(e) => {
-                                      if (e.key === "Enter") {
-                                        handleSaveLayoutName(layout.id);
-                                      } else if (e.key === "Escape") {
-                                        handleCancelEditLayoutName();
-                                      }
-                                    }}
-                                    onBlur={() =>
-                                      handleSaveLayoutName(layout.id)
-                                    }
-                                    className="bg-gray-700 text-white text-sm px-2 py-1 rounded border-none outline-none focus:ring-1 focus:ring-purple-500 max-w-[120px]"
-                                    autoFocus
+                          {/* Main Layout Header */}
+                          <div className="p-3 flex items-center justify-between">
+                            {/* Left side - Drag handle, Icon, Name */}
+                            <div className="flex items-center space-x-3">
+                              {/* Drag Handle */}
+                              <div className="cursor-move hover:text-white">
+                                <svg
+                                  className="w-4 h-4 text-gray-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M4 8h16M4 16h16"
                                   />
-                                </div>
-                              ) : (
-                                <span className="text-white font-medium truncate max-w-[150px]">
-                                  {layout.name}
+                                </svg>
+                              </div>
+
+                              {/* Green Record Indicator for saved layouts */}
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+
+                              {/* Layout Icon - Restore Window */}
+                              <div
+                                className="w-8 h-8 rounded flex items-center justify-center"
+                                style={{ backgroundColor: "#6F4FFF" }}
+                              >
+                                <img
+                                  src="./assets/icons/Restore Window.png"
+                                  alt="Layout"
+                                  className="w-5 h-5 object-contain"
+                                />
+                              </div>
+
+                              {/* Layout Name - First tab title */}
+                              <div className="flex flex-col">
+                                {editingLayoutId === layout.id ? (
+                                  <div className="flex items-center space-x-2">
+                                    <input
+                                      type="text"
+                                      value={editingLayoutName}
+                                      onChange={(e) =>
+                                        setEditingLayoutName(e.target.value)
+                                      }
+                                      onKeyPress={(e) => {
+                                        if (e.key === "Enter") {
+                                          handleSaveLayoutName(layout.id);
+                                        } else if (e.key === "Escape") {
+                                          handleCancelEditLayoutName();
+                                        }
+                                      }}
+                                      onBlur={() =>
+                                        handleSaveLayoutName(layout.id)
+                                      }
+                                      className="bg-gray-700 text-white text-sm px-2 py-1 rounded border-none outline-none focus:ring-1 focus:ring-purple-500 max-w-[120px]"
+                                      autoFocus
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-white font-medium truncate max-w-[150px]">
+                                    {layout.name}
+                                  </span>
+                                )}
+                                <span className="text-gray-400 text-xs">
+                                  {layout.tabCount} tabs
                                 </span>
-                              )}
-                              <span className="text-gray-400 text-xs">
-                                {layout.tabCount} tabs
-                              </span>
+                              </div>
+
+                              {/* Expand/Collapse Button */}
+                              <motion.button
+                                onClick={() => toggleLayoutExpansion(layout.id)}
+                                className="p-1 hover:bg-gray-600/50 rounded transition-colors ml-2"
+                                title={expandedLayouts.has(layout.id) ? "Collapse tabs" : "Expand tabs"}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <motion.svg
+                                  className="w-4 h-4 text-gray-400 hover:text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  animate={{
+                                    rotate: expandedLayouts.has(layout.id) ? 90 : 0
+                                  }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 5l7 7-7 7"
+                                  />
+                                </motion.svg>
+                              </motion.button>
+                            </div>
+
+                            {/* Right side - Action buttons */}
+                            <div className="flex items-center space-x-2">
+                              {/* Open Window - Opens all tabs from layout */}
+                              <motion.button
+                                onClick={() => {
+                                  chrome.runtime.sendMessage({command: 'OPEN_TABS', tabs: layout.tabs})
+                                }}
+                                className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                                title="Open all tabs in new window"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <svg
+                                  className="w-4 h-4 text-gray-300 hover:text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              </motion.button>
+
+                              {/* Edit Layout Name */}
+                              <motion.button
+                                onClick={() => handleEditLayoutName(layout)}
+                                className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                                title="Edit layout name"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <svg
+                                  className="w-4 h-4 text-gray-300 hover:text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  />
+                                </svg>
+                              </motion.button>
+
+                              {/* Delete Layout */}
+                              <motion.button
+                                onClick={() => handleDeleteLayoutClick(layout)}
+                                className="p-1 hover:bg-gray-600/50 rounded transition-colors"
+                                title="Delete layout"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <svg
+                                  className="w-4 h-4 text-gray-300 hover:text-red-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </motion.button>
                             </div>
                           </div>
 
-                          {/* Right side - Action buttons */}
-                          <div className="flex items-center space-x-2">
-                            {/* Open Window - Opens all tabs from layout */}
-                            <motion.button
-                              onClick={() => {
-                                chrome.runtime.sendMessage({command: 'OPEN_TABS', tabs: layout.tabs})
-                              }}
-                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                              title="Open all tabs in new window"
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <svg
-                                className="w-4 h-4 text-gray-300 hover:text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                          {/* Expandable Tab List */}
+                          <AnimatePresence>
+                            {expandedLayouts.has(layout.id) && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="overflow-hidden"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
-                            </motion.button>
+                                <div className="px-3 pb-3 border-t border-gray-700/50">
+                                  <div className="space-y-2 mt-3">
+                                    {layout.tabs.map((tab, tabIndex) => (
+                                      <motion.div
+                                        key={tabIndex}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: tabIndex * 0.05 }}
+                                        className="bg-gray-700/30 rounded-md p-2 flex items-center justify-between hover:bg-gray-700/50 transition-colors"
+                                      >
+                                        <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                          {/* Tab Favicon */}
+                                          <div className="w-4 h-4 min-w-4 min-h-4 rounded-sm bg-gray-600 flex items-center justify-center">
+                                            {tab.favIconUrl ? (
+                                              <img
+                                                src={tab.favIconUrl}
+                                                alt=""
+                                                className="w-3 h-3 object-contain"
+                                                onError={(e) => {
+                                                  e.target.style.display = 'none';
+                                                  e.target.nextSibling.style.display = 'block';
+                                                }}
+                                              />
+                                            ) : null}
+                                            <div className={tab.favIconUrl ? "hidden" : "block"}>
+                                              <svg className="w-2 h-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.559-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.559.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clipRule="evenodd" />
+                                              </svg>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Tab Title */}
+                                          <span className="text-white text-xs truncate flex-1">
+                                            {tab.title}
+                                          </span>
+                                        </div>
 
-                            {/* Edit Layout Name */}
-                            <motion.button
-                              onClick={() => handleEditLayoutName(layout)}
-                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                              title="Edit layout name"
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <svg
-                                className="w-4 h-4 text-gray-300 hover:text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
-                              </svg>
-                            </motion.button>
-
-                            {/* Delete Layout */}
-                            <motion.button
-                              onClick={() => handleDeleteLayoutClick(layout)}
-                              className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                              title="Delete layout"
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <svg
-                                className="w-4 h-4 text-gray-300 hover:text-red-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </motion.button>
-                          </div>
+                                        {/* Open Tab Button */}
+                                        <motion.button
+                                          onClick={() => window.open(tab.url, '_blank')}
+                                          className="p-1 hover:bg-gray-600/50 rounded transition-colors flex-shrink-0"
+                                          title="Open tab"
+                                          whileTap={{ scale: 0.95 }}
+                                        >
+                                          <svg
+                                            className="w-3 h-3 text-gray-400 hover:text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth="2"
+                                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                            />
+                                          </svg>
+                                        </motion.button>
+                                      </motion.div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
                       ))}
                     </AnimatePresence>
