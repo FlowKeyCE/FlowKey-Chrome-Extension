@@ -356,7 +356,7 @@ function BookmarksPage({
   const handleFileClick = () => {
     // Replace with actual FlowKey documentation URL
     window.open(
-      "https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md",
+      "https://github.com/FlowKeyCE/FlowKey-Chrome-Extension/blob/main/README.md",
       "_blank"
     );
   };

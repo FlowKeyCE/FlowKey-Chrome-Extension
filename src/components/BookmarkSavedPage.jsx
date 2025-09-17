@@ -6,7 +6,7 @@ function BookmarkSavedPage({ onBackToBookmarks, bookmarkData }) {
   };
 
   const handleFileClick = () => {
-    window.open('https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+    window.open('https://github.com/FlowKeyCE/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
   };
 
   const handleTwitterClick = () => {

@@ -23,7 +23,7 @@ A powerful bookmark and layout management Chrome extension with Phantom wallet i
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/bytesquadlabs/FlowKey-Chrome-Extension.git
+   git clone https://github.com/FlowKeyCE/FlowKey-Chrome-Extension.git
    cd FlowKey-Chrome-Extension
    ```
 
@@ -132,9 +132,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**ByteSquad Labs**
-- GitHub: [@bytesquadlabs](https://github.com/bytesquadlabs)
-- Repository: [FlowKey-Chrome-Extension](https://github.com/bytesquadlabs/FlowKey-Chrome-Extension)
+**FlowKey**
+- GitHub: [@FlowKeyCE](https://github.com/FlowKeyCE)
+- Repository: [FlowKey-Chrome-Extension](https://github.com/FlowKeyCE/FlowKey-Chrome-Extension.git)
 
 ## 🙏 Acknowledgments
 
@@ -145,7 +145,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/issues).
+For issues, questions, or feature requests, please open an issue on the [GitHub repository](https://github.com/FlowKeyCE/FlowKey-Chrome-Extension/issues).
 
 ---
 

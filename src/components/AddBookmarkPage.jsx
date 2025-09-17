@@ -56,7 +56,7 @@ function AddBookmarkPage({ onBack, onSave, editingBookmark, currentTabInfo }) {
   };
 
   const handleFileClick = () => {
-    window.open('https://github.com/bytesquadlabs/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
+    window.open('https://github.com/FlowKeyCE/FlowKey-Chrome-Extension/blob/main/README.md', '_blank');
   };
 
   const handleTwitterClick = () => {
