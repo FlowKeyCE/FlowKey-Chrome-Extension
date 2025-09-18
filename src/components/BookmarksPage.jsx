@@ -48,19 +48,31 @@ function BookmarksPage({
   }, []);
 
   const handleOpenAllBookmarks = () => {
-    // Open all bookmarks in a new window
-    if (bookmarks.length === 0) {
+    // Open each bookmark in its own new window
+    const validBookmarks = bookmarks.filter((bookmark) => bookmark.url);
+
+    if (validBookmarks.length === 0) {
+      alert("No bookmarks with valid URLs found");
       return;
     }
 
-    const bookmarkUrls = bookmarks.filter(bookmark => bookmark.url).map(bookmark => ({ url: bookmark.url }));
-    
-    if (bookmarkUrls.length > 0) {
-      chrome.runtime.sendMessage({
-        command: 'OPEN_TABS',
-        tabs: bookmarkUrls
-      });
-    }
+    // Create a new window for each bookmark
+    validBookmarks.forEach((bookmark, index) => {
+      // Add a small delay between window creations to prevent browser blocking
+      setTimeout(() => {
+        chrome.windows.create({
+          url: bookmark.url,
+          focused: index === 0, // Focus only the first window
+          type: 'normal'
+        }, (createdWindow) => {
+          if (chrome.runtime.lastError) {
+            console.error(`Failed to open bookmark "${bookmark.name}":`, chrome.runtime.lastError.message);
+            // Fallback to regular window.open if chrome API fails
+            window.open(bookmark.url, "_blank");
+          }
+        });
+      }, index * 200); // 200ms delay between each window
+    });
   };
 
   const handleAddToBookmarks = () => {
