@@ -835,13 +835,36 @@ function BookmarksPage({
 
                             {/* Right side - Action buttons */}
                             <div className="flex items-center space-x-2">
-                              {/* Open Window - Opens all tabs from layout */}
+                              {/* Open Window - Opens each tab in separate windows */}
                               <motion.button
                                 onClick={() => {
-                                  chrome.runtime.sendMessage({command: 'OPEN_TABS', tabs: layout.tabs})
+                                  // Open each tab in its own separate window
+                                  const validTabs = layout.tabs.filter((tab) => tab.url);
+                                  
+                                  if (validTabs.length === 0) {
+                                    alert("No valid tabs found in this layout");
+                                    return;
+                                  }
+
+                                  // Create a separate window for each tab
+                                  validTabs.forEach((tab, index) => {
+                                    setTimeout(() => {
+                                      chrome.windows.create({
+                                        url: tab.url,
+                                        focused: index === 0, // Focus only the first window
+                                        type: 'normal'
+                                      }, (createdWindow) => {
+                                        if (chrome.runtime.lastError) {
+                                          console.error(`Failed to open tab "${tab.title}":`, chrome.runtime.lastError.message);
+                                          // Fallback to regular window.open if chrome API fails
+                                          window.open(tab.url, "_blank");
+                                        }
+                                      });
+                                    }, index * 200); // 200ms delay between each window
+                                  });
                                 }}
                                 className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                                title="Open all tabs in new window"
+                                title="Open each tab in separate windows"
                                 whileTap={{ scale: 0.95 }}
                               >
                                 <svg
