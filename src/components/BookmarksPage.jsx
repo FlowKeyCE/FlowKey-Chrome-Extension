@@ -56,19 +56,41 @@ function BookmarksPage({
       return;
     }
 
-    // Create a new window for each bookmark
+    // Window dimensions
+    const windowWidth = 800;
+    const windowHeight = 600;
+    const screenWidth = window.screen.availWidth;
+    const screenHeight = window.screen.availHeight;
+    
+    // Calculate how many windows fit horizontally
+    const windowsPerRow = Math.floor(screenWidth / windowWidth);
+
+    // Create a new window for each bookmark with tiled positioning
     validBookmarks.forEach((bookmark, index) => {
       // Add a small delay between window creations to prevent browser blocking
       setTimeout(() => {
+        // Calculate position for tiled layout
+        const row = Math.floor(index / windowsPerRow);
+        const col = index % windowsPerRow;
+        const left = col * windowWidth;
+        const top = row * windowHeight;
+
         chrome.windows.create({
           url: bookmark.url,
           focused: index === 0, // Focus only the first window
-          type: 'normal'
+          type: 'normal',
+          width: windowWidth,
+          height: windowHeight,
+          left: left,
+          top: top
         }, (createdWindow) => {
           if (chrome.runtime.lastError) {
             console.error(`Failed to open bookmark "${bookmark.name}":`, chrome.runtime.lastError.message);
-            // Fallback to regular window.open if chrome API fails
-            window.open(bookmark.url, "_blank");
+            // Fallback to regular window.open with tiled positioning
+            const newWindow = window.open(bookmark.url, "_blank", `width=${windowWidth},height=${windowHeight},scrollbars=yes,resizable=yes`);
+            if (newWindow) {
+              newWindow.moveTo(left, top);
+            }
           }
         });
       }, index * 200); // 200ms delay between each window
@@ -846,25 +868,47 @@ function BookmarksPage({
                                     return;
                                   }
 
-                                  // Create a separate window for each tab
+                                  // Window dimensions
+                                  const windowWidth = 800;
+                                  const windowHeight = 600;
+                                  const screenWidth = window.screen.availWidth;
+                                  const screenHeight = window.screen.availHeight;
+                                  
+                                  // Calculate how many windows fit horizontally
+                                  const windowsPerRow = Math.floor(screenWidth / windowWidth);
+
+                                  // Create a separate window for each tab with tiled positioning
                                   validTabs.forEach((tab, index) => {
                                     setTimeout(() => {
+                                      // Calculate position for tiled layout
+                                      const row = Math.floor(index / windowsPerRow);
+                                      const col = index % windowsPerRow;
+                                      const left = col * windowWidth;
+                                      const top = row * windowHeight;
+
                                       chrome.windows.create({
                                         url: tab.url,
                                         focused: index === 0, // Focus only the first window
-                                        type: 'normal'
+                                        type: 'normal',
+                                        width: windowWidth,
+                                        height: windowHeight,
+                                        left: left,
+                                        top: top
                                       }, (createdWindow) => {
                                         if (chrome.runtime.lastError) {
                                           console.error(`Failed to open tab "${tab.title}":`, chrome.runtime.lastError.message);
-                                          // Fallback to regular window.open if chrome API fails
-                                          window.open(tab.url, "_blank");
+                                          // Fallback to regular window.open with tiled positioning
+                                          const newWindow = window.open(tab.url, "_blank", `width=${windowWidth},height=${windowHeight},scrollbars=yes,resizable=yes`);
+                                          if (newWindow) {
+                                            newWindow.moveTo(left, top);
+                                          }
                                         }
                                       });
                                     }, index * 200); // 200ms delay between each window
                                   });
                                 }}
                                 className="p-1 hover:bg-gray-600/50 rounded transition-colors"
-                                title="Open each tab in separate windows"
+                                title="Open each tab in tiled windows"
                                 whileTap={{ scale: 0.95 }}
                               >
                                 <svg
