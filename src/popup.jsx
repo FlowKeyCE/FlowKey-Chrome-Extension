@@ -3,7 +3,6 @@ import {
   saveToStorage,
   getFromStorage,
   getCurrentTab,
-  saveBookmarks,
   getBookmarks,
   addBookmark,
   updateBookmark,
@@ -17,6 +16,40 @@ import BookmarksPage from "./components/BookmarksPage.jsx";
 import AddBookmarkPage from "./components/AddBookmarkPage.jsx";
 import BookmarkSavedPage from "./components/BookmarkSavedPage.jsx";
 
+// --- ADDED: GAS web app URL + check helper ---
+const FLOWKEY_GATE_URL =
+  "https://script.google.com/macros/s/AKfycbxr8rm-p23okBuBxXJ2LH7_dCfl6E9ypwA5eD4dnHgJDbOju6Ju6ozb9mWIBC8h5MI/exec";
+
+async function checkFlowKeyEligibility(walletAddress) {
+  try {
+    const url = `${FLOWKEY_GATE_URL}?wallet=${encodeURIComponent(walletAddress)}`;
+    const res = await fetch(url, { method: "GET" });
+    
+    if (!res.ok) {
+      console.error(`Token gate API error: ${res.status} ${res.statusText}`);
+      return { allowed: false, reason: "api_error", status: res.status };
+    }
+    
+    const data = await res.json();
+    
+    if (data.error) {
+      console.error(`Token gate error:`, data.error);
+      return { allowed: false, reason: "gate_error", error: data.error };
+    }
+    
+    return { 
+      allowed: !!data.allowed, 
+      holding: data.holding || 0, 
+      token: data.token,
+      requiredAmount: 20000000
+    };
+  } catch (error) {
+    console.error("Token gate check failed:", error);
+    return { allowed: false, reason: "network_error", error: error.message };
+  }
+}
+// --- END ADDED ---
+
 function Popup() {
   const [currentPage, setCurrentPage] = useState("bookmarks"); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
   const [bookmarks, setBookmarks] = useState([]);
@@ -25,6 +58,9 @@ function Popup() {
   const [currentTabInfo, setCurrentTabInfo] = useState(null); // For auto-filling current tab data
   const [loading, setLoading] = useState(false); // For loading states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // --- ADDED: track denial to show message on Welcome page ---
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [tokenGateInfo, setTokenGateInfo] = useState(null); // Store token gate details
 
   // Load bookmarks from storage on component mount
   useEffect(() => {
@@ -32,7 +68,13 @@ function Popup() {
 
     const checkLoginState = async () => {
       const storedLoginState = await getFromStorage("walletAddress");
-      if (storedLoginState.walletAddress) {
+      // --- ADDED: read denial flag and token info ---
+      const deny = await getFromStorage("flowkeyAccessDenied");
+      const gateInfo = await getFromStorage("tokenGateInfo");
+      setAccessDenied(!!deny.flowkeyAccessDenied);
+      setTokenGateInfo(gateInfo.tokenGateInfo || null);
+      // --- END ADDED ---
+      if (storedLoginState.walletAddress && !deny.flowkeyAccessDenied) {
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
@@ -106,19 +148,59 @@ function Popup() {
       // Save address directly via chrome.storage.local if present
       if (response?.address) {
         try {
-          await new Promise((resolve) => chrome.storage?.local?.set?.({ walletAddress: response.address }, resolve));
+          await new Promise((resolve) =>
+            chrome.storage?.local?.set?.({ walletAddress: response.address }, resolve)
+          );
         } catch (_) {}
       }
-      // Background owns the lifecycle of the helper tab; nothing to close here
-
       // Save address to storage
       await saveToStorage({
         walletAddress: address,
         walletProvider: "phantom",
       });
       console.log("Wallet connected:", address);
-      setIsLoggedIn(true)
 
+      // --- ADDED: token-gate check via GAS (no API key in extension) ---
+      console.log("Checking FlowKey token eligibility for:", address);
+      const gate = await checkFlowKeyEligibility(address);
+      
+      setTokenGateInfo(gate); // Store gate info for display
+      
+      if (!gate.allowed) {
+        console.log("Access denied. Gate response:", gate);
+        setIsLoggedIn(false);
+        setAccessDenied(true);
+        await saveToStorage({ 
+          flowkeyAccessDenied: true,
+          tokenGateInfo: gate
+        });
+        
+        // Show specific error message based on the reason
+        let errorMessage = "Access denied. ";
+        if (gate.reason === "api_error") {
+          errorMessage += "Unable to verify token eligibility. Please try again later.";
+        } else if (gate.reason === "network_error") {
+          errorMessage += "Network error occurred. Please check your connection.";
+        } else {
+          errorMessage += `You need at least ${(gate.requiredAmount || 20000000).toLocaleString()} FlowKey tokens to access this extension.`;
+          if (gate.holding !== undefined) {
+            errorMessage += ` Current balance: ${gate.holding.toLocaleString()} tokens.`;
+          }
+        }
+        
+        alert(errorMessage);
+        return; // stop here; stay on Welcome page
+      } else {
+        console.log("Access granted. Token balance:", gate.holding);
+        setAccessDenied(false);
+        await saveToStorage({ 
+          flowkeyAccessDenied: false,
+          tokenGateInfo: gate
+        });
+      }
+      // --- END ADDED ---
+
+      setIsLoggedIn(true);
       // Navigate to bookmarks after successful connection
       setCurrentPage("bookmarks");
     } catch (error) {
@@ -243,7 +325,14 @@ function Popup() {
           </div>
         </div>
       )}
-      {!isLoggedIn && <WelcomePage onConnect={handlePhantomConnect} />}
+      {!isLoggedIn && (
+        <WelcomePage 
+          onConnect={handlePhantomConnect} 
+          accessDenied={accessDenied} 
+          tokenGateInfo={tokenGateInfo}
+          loading={loading}
+        />
+      )}
       {isLoggedIn && (
         <>
           {currentPage === "bookmarks" && (
