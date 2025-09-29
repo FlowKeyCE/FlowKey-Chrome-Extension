@@ -26,8 +26,12 @@
     "64": "assets/icons/64.png",
     "128": "assets/icons/128.png"
   },
-  "permissions": ["storage", "bookmarks", "tabs", "activeTab", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["storage", "bookmarks", "tabs", "activeTab"],
+  "host_permissions": [
+    "<all_urls>",
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*"
+  ],
   "web_accessible_resources": [
     {
       "resources": ["inpage.js"],
