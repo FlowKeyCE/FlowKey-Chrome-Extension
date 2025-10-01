@@ -69,22 +69,43 @@ function WelcomePage({ onConnect, accessDenied, tokenGateInfo, loading }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.25 }}
           >
-            <div className="flex items-center space-x-2 mb-2">
+            <div className="flex items-center justify-center space-x-2 mb-3">
               <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <h3 className="text-red-400 font-semibold text-sm">Access Required</h3>
+              <h3 className="text-red-400 font-semibold text-sm">🔒 Access Denied</h3>
             </div>
-            <p className="text-red-300 text-xs leading-relaxed">
-              {tokenGateInfo?.reason === "api_error" || tokenGateInfo?.reason === "network_error" 
-                ? "Unable to verify token eligibility. Please try again."
-                : `You need at least ${(tokenGateInfo?.requiredAmount || 20000000).toLocaleString()} FlowKey tokens to access this extension.`
-              }
-            </p>
-            {tokenGateInfo?.holding !== undefined && tokenGateInfo.reason !== "api_error" && tokenGateInfo.reason !== "network_error" && (
-              <p className="text-red-300/80 text-xs mt-1">
-                Current balance: {tokenGateInfo.holding.toLocaleString()} tokens
-              </p>
+            
+            {tokenGateInfo?.reason === "api_error" || tokenGateInfo?.reason === "network_error" ? (
+              <div className="space-y-2 text-center">
+                <p className="text-red-300 text-xs leading-relaxed">
+                  ⚠️ Unable to verify your token balance right now.
+                </p>
+                <p className="text-red-300/80 text-xs">
+                  Please check your internet connection and try again.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 text-center">
+                <p className="text-red-300 text-xs leading-relaxed">
+                  💎 You need <span className="font-semibold text-red-200">{(tokenGateInfo?.requiredAmount || 20000).toLocaleString()} FlowKey tokens</span> to access this extension.
+                </p>
+                {tokenGateInfo?.holding !== undefined && (
+                  <div className="bg-red-500/5 rounded p-2 border-l-2 border-red-400/30 text-center">
+                    <p className="text-red-300/90 text-xs">
+                      📊 Your current balance: <span className="font-medium">{Math.floor(tokenGateInfo.holding).toLocaleString()} tokens</span>
+                    </p>
+                    {tokenGateInfo.holding < (tokenGateInfo?.requiredAmount || 20000) && (
+                      <p className="text-red-300/80 text-xs mt-1">
+                        📈 You need {Math.floor((tokenGateInfo?.requiredAmount || 20000) - tokenGateInfo.holding).toLocaleString()} more tokens
+                      </p>
+                    )}
+                  </div>
+                )}
+                <p className="text-red-300/70 text-xs mt-2">
+                  🛒 Get FlowKey tokens to unlock premium features!
+                </p>
+              </div>
             )}
           </motion.div>
         )}
