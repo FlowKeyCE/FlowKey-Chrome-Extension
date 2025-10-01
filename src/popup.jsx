@@ -18,11 +18,18 @@ import BookmarkSavedPage from "./components/BookmarkSavedPage.jsx";
 
 // --- ADDED: GAS web app URL + check helper ---
 const FLOWKEY_GATE_URL =
-  "https://script.google.com/macros/s/AKfycbxr8rm-p23okBuBxXJ2LH7_dCfl6E9ypwA5eD4dnHgJDbOju6Ju6ozb9mWIBC8h5MI/exec";
+  "https://script.google.com/macros/s/AKfycbzoxxJwCPUyHsi35Xk6pUd31aYlVpaBu27vnNIm4fhZ1EkHeMf3Xyyvaav1JO53ASZw/exec";
+
+// DEBUG: Function to clear access data for testing
+window.clearFlowKeyAccess = async function() {
+  await chrome.storage.local.clear();
+  console.log("FlowKey access data cleared. Please reload the extension.");
+};
 
 async function checkFlowKeyEligibility(walletAddress) {
   try {
     const url = `${FLOWKEY_GATE_URL}?wallet=${encodeURIComponent(walletAddress)}`;
+    console.log("Making token gate request to:", url);
     const res = await fetch(url, { method: "GET" });
     
     if (!res.ok) {
@@ -36,6 +43,8 @@ async function checkFlowKeyEligibility(walletAddress) {
       console.error(`Token gate error:`, data.error);
       return { allowed: false, reason: "gate_error", error: data.error };
     }
+    
+    console.log("Token gate API response:", data);
     
     return { 
       allowed: !!data.allowed, 
@@ -51,7 +60,7 @@ async function checkFlowKeyEligibility(walletAddress) {
 // --- END ADDED ---
 
 function Popup() {
-  const [currentPage, setCurrentPage] = useState("bookmarks"); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
+  const [currentPage, setCurrentPage] = useState("welcome"); // 'welcome', 'bookmarks', 'addBookmark', or 'bookmarkSaved'
   const [bookmarks, setBookmarks] = useState([]);
   const [lastSavedBookmark, setLastSavedBookmark] = useState(null);
   const [editingBookmark, setEditingBookmark] = useState(null); // For editing existing bookmarks
@@ -61,24 +70,68 @@ function Popup() {
   // --- ADDED: track denial to show message on Welcome page ---
   const [accessDenied, setAccessDenied] = useState(false);
   const [tokenGateInfo, setTokenGateInfo] = useState(null); // Store token gate details
+  const TOKEN_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   // Load bookmarks from storage on component mount
   useEffect(() => {
     loadBookmarksFromStorage();
 
     const checkLoginState = async () => {
+      setLoading(true); // Show loading during initial check
       const storedLoginState = await getFromStorage("walletAddress");
       // --- ADDED: read denial flag and token info ---
       const deny = await getFromStorage("flowkeyAccessDenied");
       const gateInfo = await getFromStorage("tokenGateInfo");
+      const lastCheck = await getFromStorage("lastTokenCheck");
+      
       setAccessDenied(!!deny.flowkeyAccessDenied);
       setTokenGateInfo(gateInfo.tokenGateInfo || null);
       // --- END ADDED ---
-      if (storedLoginState.walletAddress && !deny.flowkeyAccessDenied) {
-        setIsLoggedIn(true);
+      
+      const walletAddress = storedLoginState.walletAddress;
+      const isDenied = deny.flowkeyAccessDenied;
+      const lastCheckTime = lastCheck.lastTokenCheck || 0;
+      const currentTime = Date.now();
+      const shouldRecheck = (currentTime - lastCheckTime) > TOKEN_CHECK_INTERVAL;
+      
+      if (walletAddress && !isDenied) {
+        // Only re-check if enough time has passed or if there's no previous successful check
+        if (shouldRecheck || gateInfo.tokenGateInfo?.allowed !== true) {
+          console.log("Re-checking token eligibility (periodic check) for:", walletAddress);
+          const gate = await checkFlowKeyEligibility(walletAddress);
+          
+          if (gate.allowed) {
+            setIsLoggedIn(true);
+            setCurrentPage("bookmarks");
+            setAccessDenied(false);
+            await saveToStorage({ 
+              flowkeyAccessDenied: false,
+              tokenGateInfo: gate,
+              lastTokenCheck: currentTime
+            });
+          } else {
+            console.log("Access denied on periodic check. Gate response:", gate);
+            setIsLoggedIn(false);
+            setAccessDenied(true);
+            setCurrentPage("welcome");
+            await saveToStorage({ 
+              flowkeyAccessDenied: true,
+              tokenGateInfo: gate,
+              lastTokenCheck: currentTime
+            });
+          }
+        } else {
+          // User has valid access and recent check - proceed directly
+          console.log("User has valid access, skipping token re-check");
+          setIsLoggedIn(true);
+          setCurrentPage("bookmarks");
+          setAccessDenied(false);
+        }
       } else {
         setIsLoggedIn(false);
+        setCurrentPage("welcome");
       }
+      setLoading(false); // Hide loading after initial check
     };
 
     checkLoginState();
@@ -172,7 +225,8 @@ function Popup() {
         setAccessDenied(true);
         await saveToStorage({ 
           flowkeyAccessDenied: true,
-          tokenGateInfo: gate
+          tokenGateInfo: gate,
+          lastTokenCheck: Date.now()
         });
         
         // Show specific error message based on the reason
@@ -182,7 +236,7 @@ function Popup() {
         } else if (gate.reason === "network_error") {
           errorMessage += "Network error occurred. Please check your connection.";
         } else {
-          errorMessage += `You need at least ${(gate.requiredAmount || 20000000).toLocaleString()} FlowKey tokens to access this extension.`;
+          errorMessage += `You need at least ${(gate.requiredAmount || 20000).toLocaleString()} FlowKey tokens to access this extension.`;
           if (gate.holding !== undefined) {
             errorMessage += ` Current balance: ${gate.holding.toLocaleString()} tokens.`;
           }
@@ -195,13 +249,14 @@ function Popup() {
         setAccessDenied(false);
         await saveToStorage({ 
           flowkeyAccessDenied: false,
-          tokenGateInfo: gate
+          tokenGateInfo: gate,
+          lastTokenCheck: Date.now() // Store timestamp of successful verification
         });
       }
       // --- END ADDED ---
 
       setIsLoggedIn(true);
-      // Navigate to bookmarks after successful connection
+      // Navigate to bookmarks after successful token verification
       setCurrentPage("bookmarks");
     } catch (error) {
       console.error("Error during Phantom connect:", error);
