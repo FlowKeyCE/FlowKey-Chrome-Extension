@@ -27,7 +27,7 @@ build/
 
 # OS
 Thumbs.db
-.DS_Store
+
 
 # Package manager
 package-lock.json
